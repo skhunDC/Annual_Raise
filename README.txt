@@ -18,6 +18,10 @@ The chosen rank sort setting is now saved on the server, so once the list has
 been sorted by rank it will continue to load in that order until "Sort Rank"
 is pressed again.
 
+Employee rank inputs now update immediately when using the number field arrows,
+allowing staff to move up or down repeatedly. Each adjustment persists the new
+ordering back to the spreadsheet automatically.
+
 When "Sort Rank" is pressed the screen now fades out and a loading bar
 appears until the sorting and saving completes.
 
