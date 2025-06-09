@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --panel-bg: #fff;
+      --border: #c9c9c9;
+      --accent: #0073e6;
+      --shade: #cccccc;
+      --dept-bg: #e0e0e0;
+      --text-color: #333;
+      --input-height: 24px;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 20px;
+      background: var(--bg);
+      font-family: Arial, sans-serif;
+      color: var(--text-color);
+    }
+
+    /* ====== HEADER: TITLE + LOGO SIDE BY SIDE ====== */
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: center;   /* centers the title */
+      position: relative;        /* for absolute-positioned logo */
+      margin: 20px 0 20px 0;     /* breathing room above and below */
+    }
+    #header .title {
+      margin: 0 auto;
+      font-size: 2em;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    #header #logo {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      max-height: 100px;
+    }
+
+    /* ---------------- LOADING BAR STYLES ---------------- */
+    #loadingContainer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 6px;
+      background-color: transparent;
+      z-index: 10000;
+      overflow: hidden;
+      display: none; /* hidden by default */
+    }
+    #loadingBar {
+      width: 0%;
+      height: 100%;
+      background-color: var(--accent);
+      transition: width 0.2s ease-out;
+    }
+
+    /* ------------ DEPARTMENT PANELS (3-column FLEX) ------------ */
+    #departments {
+      display: flex;
+      gap: 20px;
+      width: 100%;
+      box-sizing: border-box;
+      padding-bottom: 100px; /* extra space so bottom buttons don’t overlap */
+    }
+    .department {
+      flex: 1 1 0;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .dept-info {
+      background: var(--dept-bg);
+      border-bottom: 3px solid var(--border);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .department-header {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin: 0;
+      color: var(--accent);
+      text-align: center;
+    }
+    .dept-info .totals {
+      font-size: 0.95em;
+      margin: 0;
+    }
+    .slider {
+      width: 100%;
+      margin: 0;
+      height: var(--input-height);
+    }
+    .labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.95em;
+      margin: 0;
+    }
+
+    /* ------------ EMPLOYEE LIST WITH FLEX ITEMS ------------ */
+    .employee-list {
+      padding: 15px;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+    }
+    .employee-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: var(--input-height);
+    }
+    .employee-row.shaded {
+      background-color: var(--shade);
+    }
+    .employee-info {
+      display: flex;
+      flex-direction: column;
+      flex: 2 1 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .emp-name {
+      font-size: 0.9em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .emp-pay {
+      font-size: 0.8em;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .emp-slider {
+      flex: 3 2 0;
+      min-width: 0;
+      height: var(--input-height);
+    }
+    .label-text {
+      flex: 0 0 auto;
+      font-size: 0.88em;
+      white-space: nowrap;
+      margin-left: 4px;
+      margin-right: 2px;
+    }
+    /* Input boxes: width = 8ch */
+    .emp-percent {
+      width: 8ch;
+      padding: 2px 2px;
+      font-size: 0.88em;
+      height: var(--input-height);
+      text-align: right;
+      flex: 0 0 auto;
+      margin-right: 4px;
+    }
+    .emp-hourly {
+      width: 8ch;
+      padding: 2px 2px;
+      font-size: 0.88em;
+      height: var(--input-height);
+      text-align: right;
+      flex: 0 0 auto;
+      margin-right: 4px;
+    }
+    /* New Rate amount styling */
+    .emp-new-rate {
+      color: green;
+      font-size: 0.8em;
+      margin: 0 4px 0 4px;
+      white-space: nowrap;
+    }
+
+    /* ---------------- EDIT DATA MODAL STYLES ---------------- */
+    #editModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: #fff;
+      padding: 20px;
+      overflow: auto;
+      z-index: 9999;
+      box-sizing: border-box;
+    }
+    #modalActions {
+      position: absolute;
+      top: 10px; right: 10px;
+    }
+    #modalActions button {
+      margin-left: 8px;
+      padding: 8px 16px;
+    }
+    #addButtons {
+      margin-top: 50px;
+      margin-bottom: 10px;
+    }
+    #addButtons button {
+      margin-right: 8px;
+    }
+    .remove-btn {
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      text-align: left;
+    }
+    tr:nth-child(even) {
+      background-color: var(--shade);
+    }
+
+    /* ------------------- BOTTOM CONTROLS -------------------- */
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+    }
+    #controls button {
+      font-size: 1.2em;
+      padding: 12px 32px;
+      margin: 0 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .edit-btn {
+      background: var(--accent);
+      color: #fff;
+    }
+    .reset-btn {
+      background: #555;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading bar (initially hidden) -->
+  <div id="loadingContainer">
+    <div id="loadingBar"></div>
+  </div>
+
+  <!-- HEADER: title centered + logo on right (with breathing room) -->
+  <div id="header">
+    <h1 class="title">Dublin Cleaner’s Raise Allocation</h1>
+    <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2024/12/Dublin-Logos-stacked.png" alt="Dublin Cleaners Logo">
+  </div>
+
+  <!-- Department panels -->
+  <div id="departments"></div>
+
+  <!-- Bottom controls -->
+  <div id="controls">
+    <button class="edit-btn" onclick="editData()">✏️ Edit Data</button>
+    <button class="reset-btn" onclick="resetAllocations()">🔄 Reset Allocations</button>
+  </div>
+
+  <!-- Edit Data modal -->
+  <div id="editModal">
+    <div id="modalActions">
+      <button onclick="saveEdits()">💾 Save All Changes</button>
+      <button onclick="closeModal()">❌ Cancel</button>
+    </div>
+    <div id="addButtons">
+      <button onclick="addDepartmentRow()">➕ Add Department</button>
+      <button onclick="addEmployeeRow()">➕ Add Employee</button>
+    </div>
+    <h3>Departments</h3>
+    <table id="deptTable">
+      <tr><th>Name</th><th>Total Wages</th><th>Raise %</th><th>Action</th></tr>
+    </table>
+    <h3>Employees</h3>
+    <table id="empTable">
+      <tr><th>Name</th><th>Department</th><th>Hourly Rate</th><th>Hours</th><th>Action</th></tr>
+    </table>
+  </div>
+
+  <script>
+    let currentDepts = [], currentEmps = [];
+    let loadStartTime = 0;
+    let progressIntervalId;
+
+    function startLoadingBar() {
+      const container = document.getElementById('loadingContainer');
+      const bar = document.getElementById('loadingBar');
+      container.style.display = 'block';
+      bar.style.width = '0%';
+      loadStartTime = Date.now();
+      progressIntervalId = setInterval(() => {
+        const elapsed = Date.now() - loadStartTime;
+        const pct = Math.min(90, (elapsed / 2000) * 100);
+        bar.style.width = pct + '%';
+      }, 100);
+    }
+
+    function finishLoadingBar(callback) {
+      clearInterval(progressIntervalId);
+      const bar = document.getElementById('loadingBar');
+      bar.style.width = '100%';
+      setTimeout(() => {
+        document.getElementById('loadingContainer').style.display = 'none';
+        if (callback) callback();
+      }, 300);
+    }
+
+    function loadData() {
+      startLoadingBar();
+      google.script.run
+        .withSuccessHandler(([d, e]) => {
+          currentDepts = d;
+          currentEmps = e;
+          renderDepartments();
+          finishLoadingBar();
+        })
+        .getDashboardData();
+    }
+
+    function renderDepartments() {
+      const ctr = document.getElementById('departments');
+      ctr.innerHTML = '';
+
+      currentDepts.forEach(dept => {
+        const box = document.createElement('div');
+        box.className = 'department';
+
+        const infoBox = document.createElement('div');
+        infoBox.className = 'dept-info';
+
+        const header = document.createElement('div');
+        header.className = 'department-header';
+        header.textContent = dept.name;
+        infoBox.appendChild(header);
+
+        const tot = document.createElement('div');
+        tot.className = 'totals';
+        tot.innerHTML = `<b>Total Wages:</b> $${dept.wages.toLocaleString()}`;
+        infoBox.appendChild(tot);
+
+        const ds = document.createElement('input');
+        ds.type = 'range';
+        ds.min = 0; ds.max = 15; ds.step = 1;
+        ds.value = dept.pct;
+        ds.className = 'slider';
+        infoBox.appendChild(ds);
+
+        const labels = document.createElement('div');
+        labels.className = 'labels';
+        labels.innerHTML = `
+          <span><b>Raise %:</b> ${dept.pct}%</span>
+          <span><b>Budget:</b> $${(dept.wages * (dept.pct / 100)).toLocaleString()}</span>
+        `;
+        infoBox.appendChild(labels);
+
+        const rem = document.createElement('div');
+        rem.className = 'remaining';
+        infoBox.appendChild(rem);
+
+        box.appendChild(infoBox);
+
+        const listBox = document.createElement('div');
+        listBox.className = 'employee-list';
+
+        // Filter and sort employees by rate ascending (lowest-paid first)
+        const emps = currentEmps
+          .filter(e => e.dept === dept.name)
+          .sort((a, b) => a.rate - b.rate);
+
+        emps.forEach((emp, idx) => {
+          const row = document.createElement('div');
+          row.className = 'employee-row';
+          if (idx % 2 === 1) {
+            row.classList.add('shaded');
+          }
+
+          // Employee info block
+          const info = document.createElement('div');
+          info.className = 'employee-info';
+
+          // Line 1: Name
+          const nameDiv = document.createElement('div');
+          nameDiv.className = 'emp-name';
+          nameDiv.textContent = emp.name;
+          info.appendChild(nameDiv);
+
+          // Line 2: Current pay rate & annual salary
+          const annual = emp.rate * emp.hours;
+          const payDiv = document.createElement('div');
+          payDiv.className = 'emp-pay';
+          payDiv.textContent = `$${emp.rate.toFixed(2)}/hr – $${annual.toLocaleString()}/yr`;
+          info.appendChild(payDiv);
+
+          row.appendChild(info);
+
+          // Employee slider (max 40%)
+          const es = document.createElement('input');
+          es.type = 'range';
+          es.min = 0; 
+          es.max = 40;  // slider max 40%
+          es.step = 0.45;
+          es.value = emp.allocation;
+          es.className = 'emp-slider';
+          row.appendChild(es);
+
+          // New rate amount (green) directly after slider
+          const newRateDiv = document.createElement('div');
+          newRateDiv.className = 'emp-new-rate';
+          newRateDiv.textContent = ''; // will be set below
+          row.appendChild(newRateDiv);
+
+          // “%:” label
+          const percentLabel = document.createElement('span');
+          percentLabel.className = 'label-text';
+          percentLabel.textContent = '%:';
+          row.appendChild(percentLabel);
+
+          // Percent input (max 40)
+          const percentInput = document.createElement('input');
+          percentInput.type = 'number';
+          percentInput.className = 'emp-percent';
+          percentInput.step = '0.01';
+          percentInput.min = '0';
+          percentInput.max = '40';
+          percentInput.value = Number(emp.allocation).toFixed(2);
+          percentInput.title = 'Enter exact %';
+          row.appendChild(percentInput);
+
+          // “$/hr:” label
+          const hourlyLabel = document.createElement('span');
+          hourlyLabel.className = 'label-text';
+          hourlyLabel.textContent = '$/hr:';
+          row.appendChild(hourlyLabel);
+
+          // Hourly-increase input
+          const hourlyInput = document.createElement('input');
+          hourlyInput.type = 'number';
+          hourlyInput.className = 'emp-hourly';
+          hourlyInput.step = '0.01';
+          hourlyInput.min = '0';
+          hourlyInput.value = '0.00';
+          hourlyInput.title = 'Enter exact $/hr increase';
+          row.appendChild(hourlyInput);
+
+          // Function to update the displayed dollar amount (no label text)
+          function updateNewRate() {
+            const pct = parseFloat(percentInput.value) || 0;
+            const newRate = emp.rate * (1 + pct / 100);
+            newRateDiv.textContent = `$${newRate.toFixed(2)}/hr`;
+          }
+
+          // Slider oninput: recalc percentInput, hourlyInput, then update new rate & remaining
+          es.oninput = () => {
+            const pctEmp = Number(es.value);
+            percentInput.value = pctEmp.toFixed(2);
+            const hrInc = emp.rate * (pctEmp / 100);
+            hourlyInput.value = hrInc.toFixed(2);
+
+            updateNewRate();
+            updateRemaining();
+          };
+
+          // Slider onchange: persist allocation
+          es.onchange = () => {
+            google.script.run.saveEmployeeAllocation(emp.name, Number(es.value));
+          };
+
+          // Percent input onchange: recalc slider, hourlyInput, then update new rate & save
+          percentInput.onchange = () => {
+            let pctVal = parseFloat(percentInput.value) || 0;
+            if (pctVal < 0) pctVal = 0;
+            if (pctVal > 40) pctVal = 40;
+            percentInput.value = pctVal.toFixed(2);
+            es.value = pctVal;
+
+            const hrInc = emp.rate * (pctVal / 100);
+            hourlyInput.value = hrInc.toFixed(2);
+
+            updateNewRate();
+            google.script.run.saveEmployeeAllocation(emp.name, pctVal);
+            updateRemaining();
+          };
+
+          // Hourly input onchange: recalc slider & percentInput, then update new rate & save
+          hourlyInput.onchange = () => {
+            let hrVal = parseFloat(hourlyInput.value) || 0;
+            if (hrVal < 0) hrVal = 0;
+            const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
+            const clampedPct = Math.min(40, pctVal);
+            es.value = clampedPct;
+            percentInput.value = clampedPct.toFixed(2);
+
+            updateNewRate();
+            google.script.run.saveEmployeeAllocation(emp.name, clampedPct);
+            updateRemaining();
+          };
+
+          // Initialize the hourlyInput & newRateDiv on first render
+          const initialPct = Number(emp.allocation);
+          const initialHrInc = emp.rate * (initialPct / 100);
+          hourlyInput.value = initialHrInc.toFixed(2);
+          updateNewRate();
+
+          // Append this row to the listBox
+          listBox.appendChild(row);
+        });
+
+        // Function to update the “Remaining” line when allocations change
+        function updateRemaining() {
+          const budget = dept.wages * (ds.value / 100);
+          let usedAnnualCost = 0;
+          listBox.querySelectorAll('.employee-row').forEach(row => {
+            const empName = row.querySelector('.emp-name').textContent;
+            const empObj = currentEmps.find(e => e.name === empName && e.dept === dept.name);
+            if (!empObj) return;
+
+            const hourlyInput = row.querySelector('.emp-hourly');
+            const hrIncrease = parseFloat(hourlyInput.value) || 0;
+            usedAnnualCost += hrIncrease * (empObj.hours || 0);
+          });
+
+          const left = budget - usedAnnualCost;
+          rem.textContent = `Remaining: $${left.toFixed(2)}`;
+          rem.style.color = left < 0 ? 'red' : 'green';
+        }
+
+        // Department slider oninput: update labels, recalc employees, update remaining
+        ds.oninput = () => {
+          labels.children[0].innerHTML = `<b>Raise %:</b> ${ds.value}%`;
+          labels.children[1].innerHTML = `<b>Budget:</b> $${(dept.wages * (ds.value / 100)).toLocaleString()}`;
+          listBox.querySelectorAll('.employee-row input[type="range"]').forEach(sl => sl.dispatchEvent(new Event('input')));
+          updateRemaining();
+        };
+
+        // Department slider onchange: persist department allocation
+        ds.onchange = () => {
+          google.script.run.saveDepartmentAllocation(dept.name, Number(ds.value));
+        };
+
+        // Initialize “Remaining” when panel first renders
+        ds.dispatchEvent(new Event('input'));
+
+        box.appendChild(listBox);
+        ctr.appendChild(box);
+      });
+    }
+
+    function resetAllocations() {
+      if (!confirm("Are you sure you want to reset All Allocations?")) return;
+      document.querySelectorAll('.department .slider, .department .emp-slider').forEach(sl => {
+        sl.value = 0;
+        sl.dispatchEvent(new Event('input'));
+        if (sl.onchange) sl.onchange();
+      });
+    }
+
+    function editData() {
+      // Show loading bar and animate
+      startLoadingBar();
+      google.script.run
+        .withSuccessHandler(([d,e]) => {
+          currentDepts = d;
+          currentEmps = e;
+          populateEditTables();
+          finishLoadingBar(() => {
+            document.getElementById('editModal').style.display = 'block';
+          });
+        })
+        .getDashboardData();
+    }
+
+    function populateEditTables() {
+      const dt = document.getElementById('deptTable');
+      dt.innerHTML = '<tr><th>Name</th><th>Total Wages</th><th>Raise %</th><th>Action</th></tr>';
+      currentDepts.forEach(d => {
+        const r = dt.insertRow();
+        r.innerHTML = `
+          <td><input></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><button class="remove-btn" onclick="this.closest('tr').remove()">❌</button></td>
+        `;
+        r.cells[0].querySelector('input').value = d.name;
+        r.cells[1].querySelector('input').value = d.wages;
+        r.cells[2].querySelector('input').value = d.pct;
+      });
+
+      const et = document.getElementById('empTable');
+      et.innerHTML = '<tr><th>Name</th><th>Department</th><th>Hourly Rate</th><th>Hours</th><th>Action</th></tr>';
+      const opts = currentDepts.map(d => `<option>${d.name}</option>`).join('');
+      currentEmps.forEach(e => {
+        const r = et.insertRow();
+        r.innerHTML = `
+          <td><input></td>
+          <td><select>${opts}</select></td>
+          <td><input type="number"></td>
+          <td><input type="number"></td>
+          <td><button class="remove-btn" onclick="this.closest('tr').remove()">❌</button></td>
+        `;
+        r.cells[0].querySelector('input').value = e.name;
+        r.cells[1].querySelector('select').value = e.dept;
+        r.cells[2].querySelector('input').value = e.rate;
+        r.cells[3].querySelector('input').value = e.hours;
+      });
+    }
+
+    function addDepartmentRow() {
+      const dt = document.getElementById('deptTable');
+      const r = dt.insertRow();
+      r.innerHTML = `
+        <td><input></td>
+        <td><input type="number" value="0"></td>
+        <td><input type="number" value="0"></td>
+        <td><button class="remove-btn" onclick="this.closest('tr').remove()">❌</button></td>
+      `;
+    }
+
+    function addEmployeeRow() {
+      const et = document.getElementById('empTable');
+      const opts = currentDepts.map(d => `<option>${d.name}</option>`).join('');
+      const r = et.insertRow();
+      r.innerHTML = `
+        <td><input></td>
+        <td><select>${opts}</select></td>
+        <td><input type="number" value="0"></td>
+        <td><input type="number" value="1800"></td>
+        <td><button class="remove-btn" onclick="this.closest('tr').remove()">❌</button></td>
+      `;
+    }
+
+    function saveEdits() {
+      const depts = [], emps = [];
+      document.querySelectorAll('#deptTable tr').forEach((row, i) => {
+        if (i === 0) return;
+        const [n, w, p] = row.querySelectorAll('input');
+        const name = n.value.trim();
+        if (!name) return;
+        depts.push({ name, wages: +w.value || 0, pct: +p.value || 0 });
+      });
+      document.querySelectorAll('#empTable tr').forEach((row, i) => {
+        if (i === 0) return;
+        const [n, d, r, h] = row.querySelectorAll('input, select');
+        const name = n.value.trim();
+        if (!name) return;
+        emps.push({ name, dept: d.value, rate: +r.value || 0, hours: +h.value || 0 });
+      });
+      google.script.run
+        .withSuccessHandler(() => {
+          closeModal();
+          loadData();
+        })
+        .withFailureHandler(err => alert(err.message))
+        .saveDashboardData(depts, emps);
+    }
+
+    function closeModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    window.onload = loadData;
+  </script>
+</body>
+</html>
