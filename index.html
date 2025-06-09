@@ -401,6 +401,18 @@
     }
 
     function sortByRank() {
+      const byDept = {};
+      currentEmps.forEach(e => {
+        if (!byDept[e.dept]) byDept[e.dept] = [];
+        byDept[e.dept].push(e);
+      });
+      Object.keys(byDept).forEach(d => {
+        const list = byDept[d].sort((a, b) => a.rank - b.rank);
+        list.forEach((emp, idx) => {
+          emp.rank = idx + 1;
+          google.script.run.saveEmployeeRank(emp.name, emp.rank);
+        });
+      });
       rankSort = true;
       renderDepartments();
     }
