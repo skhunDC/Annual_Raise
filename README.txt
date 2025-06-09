@@ -10,4 +10,7 @@ pay info, pay increase slider, percent increase, and hourly increase.
 
 Header labels have been shortened and centered so they stay on one line.
 
+Sorting by rank now updates and saves the sequential ranks back to the
+spreadsheet.
+
 See `AGENTS.md` for repository contribution guidelines.
