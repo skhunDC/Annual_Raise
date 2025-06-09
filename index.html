@@ -277,6 +277,30 @@
       flex: 0 0 auto;
       margin-right: 4px;
     }
+    .emp-rank::-webkit-outer-spin-button,
+    .emp-rank::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    .rank-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 5ch;
+      flex: 0 0 auto;
+      margin-right: 4px;
+    }
+    .rank-controls button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    .rank-controls button:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
     /* New Rate amount styling */
     .emp-new-rate {
       color: green;
@@ -547,14 +571,27 @@
             row.classList.add('shaded');
           }
 
-          // Rank input
+          // Rank controls: up button, input, down button
+          const rankBox = document.createElement('div');
+          rankBox.className = 'rank-controls';
+
+          const upBtn = document.createElement('button');
+          upBtn.textContent = '▲';
+          rankBox.appendChild(upBtn);
+
           const rankInput = document.createElement('input');
           rankInput.type = 'number';
           rankInput.className = 'emp-rank';
           rankInput.min = 1;
           rankInput.max = empCount;
           rankInput.value = emp.rank;
-          row.appendChild(rankInput);
+          rankBox.appendChild(rankInput);
+
+          const downBtn = document.createElement('button');
+          downBtn.textContent = '▼';
+          rankBox.appendChild(downBtn);
+
+          row.appendChild(rankBox);
 
           // Employee info block
           const info = document.createElement('div');
@@ -625,6 +662,20 @@
           row.appendChild(hourlyInput);
 
           // Rank change handler
+          const changeRank = delta => {
+            let newRank = emp.rank + delta;
+            if (newRank < 1 || newRank > empCount) return;
+            const other = currentEmps.find(e => e.dept === dept.name && e.rank === newRank);
+            if (other && other.name !== emp.name) {
+              other.rank = emp.rank;
+              google.script.run.saveEmployeeRank(other.name, other.rank);
+            }
+            emp.rank = newRank;
+            rankInput.value = newRank;
+            google.script.run.saveEmployeeRank(emp.name, newRank);
+            renderDepartments();
+          };
+
           const handleRankChange = () => {
             let val = parseInt(rankInput.value) || 1;
             if (val < 1) val = 1;
@@ -633,18 +684,15 @@
               rankInput.value = val;
               return;
             }
-            const other = currentEmps.find(e => e.dept === dept.name && e.rank === val);
-            if (other && other.name !== emp.name) {
-              other.rank = emp.rank;
-              google.script.run.saveEmployeeRank(other.name, other.rank);
-            }
-            emp.rank = val;
-            rankInput.value = val;
-            google.script.run.saveEmployeeRank(emp.name, val);
-            renderDepartments();
+            const delta = val - emp.rank;
+            changeRank(delta);
           };
           rankInput.onchange = handleRankChange;
           rankInput.oninput = handleRankChange;
+          upBtn.onclick = () => changeRank(-1);
+          downBtn.onclick = () => changeRank(1);
+          upBtn.disabled = emp.rank === 1;
+          downBtn.disabled = emp.rank === empCount;
 
           // Function to update the displayed dollar amount (no label text)
           function updateNewRate() {
