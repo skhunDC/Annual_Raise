@@ -625,10 +625,14 @@
           row.appendChild(hourlyInput);
 
           // Rank change handler
-          rankInput.onchange = () => {
+          const handleRankChange = () => {
             let val = parseInt(rankInput.value) || 1;
             if (val < 1) val = 1;
             if (val > empCount) val = empCount;
+            if (val === emp.rank) {
+              rankInput.value = val;
+              return;
+            }
             const other = currentEmps.find(e => e.dept === dept.name && e.rank === val);
             if (other && other.name !== emp.name) {
               other.rank = emp.rank;
@@ -639,6 +643,8 @@
             google.script.run.saveEmployeeRank(emp.name, val);
             renderDepartments();
           };
+          rankInput.onchange = handleRankChange;
+          rankInput.oninput = handleRankChange;
 
           // Function to update the displayed dollar amount (no label text)
           function updateNewRate() {
