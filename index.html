@@ -437,6 +437,14 @@
     let rankSort = false;
     let loadStartTime = 0;
     let progressIntervalId;
+
+    function debounce(fn, delay) {
+      let id;
+      return (...args) => {
+        clearTimeout(id);
+        id = setTimeout(() => fn(...args), delay);
+      };
+    }
     function showOverlay() {
       document.getElementById('screenOverlay').style.display = 'flex';
     }
@@ -717,8 +725,11 @@
             google.script.run.saveEmployeeAllocation(emp.name, Number(es.value));
           };
 
-          // Percent input onchange: recalc slider, hourlyInput, then update new rate & save
-          percentInput.onchange = () => {
+          const saveAlloc = pct => google.script.run.saveEmployeeAllocation(emp.name, pct);
+          const saveAllocDebounced = debounce(saveAlloc, 600);
+
+          // Percent input oninput: recalc slider, hourlyInput, then update new rate & save
+          percentInput.oninput = () => {
             let pctVal = parseFloat(percentInput.value) || 0;
             if (pctVal < 0) pctVal = 0;
             if (pctVal > 40) pctVal = 40;
@@ -729,12 +740,12 @@
             hourlyInput.value = hrInc.toFixed(2);
 
             updateNewRate();
-            google.script.run.saveEmployeeAllocation(emp.name, pctVal);
             updateRemaining();
+            saveAllocDebounced(pctVal);
           };
 
-          // Hourly input onchange: recalc slider & percentInput, then update new rate & save
-          hourlyInput.onchange = () => {
+          // Hourly input oninput: recalc slider & percentInput, then update new rate & save
+          hourlyInput.oninput = () => {
             let hrVal = parseFloat(hourlyInput.value) || 0;
             if (hrVal < 0) hrVal = 0;
             const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
@@ -743,8 +754,8 @@
             percentInput.value = clampedPct.toFixed(2);
 
             updateNewRate();
-            google.script.run.saveEmployeeAllocation(emp.name, clampedPct);
             updateRemaining();
+            saveAllocDebounced(clampedPct);
           };
 
           // Initialize the hourlyInput & newRateDiv on first render

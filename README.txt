@@ -26,6 +26,10 @@ supported, and each change is saved back to the spreadsheet immediately.
 When "Sort Rank" is pressed the screen now fades out and a loading bar
 appears until the sorting and saving completes.
 
+Employee raise amounts entered in the % Up or $/hr Up fields are now
+automatically saved a moment after typing stops so data persists even if the
+page is refreshed.
+
 See `AGENTS.md` for repository contribution guidelines.
 
 To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:
