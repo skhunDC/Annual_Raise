@@ -10,21 +10,10 @@ pay info, pay increase slider, percent increase, and hourly increase.
 
 Header labels have been shortened and centered so they stay on one line.
 
-Sorting by rank now updates and saves the sequential ranks back to the
-spreadsheet, and the employee rows are reordered so the sort persists
-after refreshing the page.
-
-The chosen rank sort setting is now saved on the server, so once the list has
-been sorted by rank it will continue to load in that order until "Sort Rank"
-is pressed again.
-
-Employee rank inputs now include dedicated up and down buttons. Clicking the
+Employee rank inputs include dedicated up and down buttons. Clicking the
 arrows moves the selected employee higher or lower in the list one spot at a
 time until the top or bottom is reached. Manual number entry is still
 supported, and each change is saved back to the spreadsheet immediately.
-
-When "Sort Rank" is pressed the screen now fades out and a loading bar
-appears until the sorting and saving completes.
 
 Employee raise amounts entered in the % Up or $/hr Up fields are now
 automatically saved a moment after typing stops so data persists even if the
