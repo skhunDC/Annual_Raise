@@ -76,6 +76,38 @@
       transition: width 0.2s ease-out;
     }
 
+    /* -------------- FULL SCREEN OVERLAY ---------------- */
+    #screenOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    #overlayBar {
+      width: 60%;
+      height: 8px;
+      background: var(--shade);
+      overflow: hidden;
+    }
+    #overlayBar::after {
+      content: '';
+      display: block;
+      width: 0%;
+      height: 100%;
+      background: var(--accent);
+      animation: overlay-progress 1s linear infinite;
+    }
+    @keyframes overlay-progress {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+
     /* ------------ DEPARTMENT PANELS (3-column FLEX) ------------ */
     #departments {
       display: flex;
@@ -335,6 +367,11 @@
     <div id="loadingBar"></div>
   </div>
 
+  <!-- Full screen overlay for rank sorting -->
+  <div id="screenOverlay">
+    <div id="overlayBar"></div>
+  </div>
+
   <!-- HEADER: title centered + logo on right (with breathing room) -->
   <div id="header">
     <button id="sortRanks" onclick="sortByRank()">Sort Rank</button>
@@ -376,6 +413,12 @@
     let rankSort = false;
     let loadStartTime = 0;
     let progressIntervalId;
+    function showOverlay() {
+      document.getElementById('screenOverlay').style.display = 'flex';
+    }
+    function hideOverlay() {
+      document.getElementById('screenOverlay').style.display = 'none';
+    }
 
     function startLoadingBar() {
       const container = document.getElementById('loadingContainer');
@@ -414,13 +457,15 @@
           updates.push({ name: emp.name, rank: emp.rank });
         });
       });
+      showOverlay();
       google.script.run
-        .withSuccessHandler(loadData)
+        .withSuccessHandler(() => loadData(hideOverlay))
+        .withFailureHandler(hideOverlay)
         .saveEmployeeRanks(updates);
       rankSort = true;
     }
 
-    function loadData() {
+    function loadData(done) {
       startLoadingBar();
       google.script.run
         .withSuccessHandler(([d, e, rs]) => {
@@ -428,7 +473,7 @@
           currentEmps = e;
           rankSort = rs;
           renderDepartments();
-          finishLoadingBar();
+          finishLoadingBar(done);
         })
         .getDashboardData();
     }
@@ -811,7 +856,7 @@
       document.getElementById('editModal').style.display = 'none';
     }
 
-    window.onload = loadData;
+    window.onload = () => loadData();
   </script>
 </body>
 </html>
