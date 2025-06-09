@@ -154,28 +154,34 @@
     }
     .rank-header {
       width: 5ch;
-      text-align: right;
+      text-align: center;
       flex: 0 0 auto;
       margin-right: 4px;
+      white-space: nowrap;
     }
     .info-header {
       flex: 2 1 0;
+      text-align: center;
+      white-space: nowrap;
     }
     .slider-header {
       flex: 3 2 0;
       text-align: center;
+      white-space: nowrap;
     }
     .percent-header {
       width: 8ch;
-      text-align: right;
+      text-align: center;
       flex: 0 0 auto;
       margin-right: 4px;
+      white-space: nowrap;
     }
     .hourly-header {
       width: 8ch;
-      text-align: right;
+      text-align: center;
       flex: 0 0 auto;
       margin-right: 4px;
+      white-space: nowrap;
     }
     .employee-info {
       display: flex;
@@ -460,10 +466,10 @@
         headerRow.className = 'employee-header';
         headerRow.innerHTML = `
           <div class="rank-header">Rank</div>
-          <div class="info-header">Employee (Current Pay)</div>
-          <div class="slider-header">Pay Increase</div>
-          <div class="percent-header">% Increase</div>
-          <div class="hourly-header">$/hr Increase</div>
+          <div class="info-header">Emp &amp; Pay</div>
+          <div class="slider-header">Raise</div>
+          <div class="percent-header">% Up</div>
+          <div class="hourly-header">$/hr Up</div>
         `;
         listBox.appendChild(headerRow);
 
