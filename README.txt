@@ -15,3 +15,18 @@ spreadsheet, and the employee rows are reordered so the sort persists
 after refreshing the page.
 
 See `AGENTS.md` for repository contribution guidelines.
+
+To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:
+
+```
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+```
+
+Then include the deployed URL inside an iframe in your page:
+
+```
+<iframe src="https://YOUR_WEB_APP_URL"></iframe>
+```
