@@ -275,3 +275,20 @@ function getRankSort() {
 function getDashboardData() {
   return [ getDepartments(), getEmployees(), getRankSort() ];
 }
+
+// Reset all department and employee allocation percentages to zero
+function resetAllAllocations() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const ds = ss.getSheetByName('Departments');
+  if (ds && ds.getLastRow() > 1) {
+    ds.getRange(2, 3, ds.getLastRow() - 1, 1).setValue(0);
+  }
+  const es = ss.getSheetByName('Employees');
+  if (es) {
+    const hdr = es.getRange(1, 1, 1, es.getLastColumn()).getValues()[0];
+    const idx = hdr.indexOf('AllocationPercent');
+    if (idx >= 0 && es.getLastRow() > 1) {
+      es.getRange(2, idx + 1, es.getLastRow() - 1, 1).setValue(0);
+    }
+  }
+}

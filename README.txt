@@ -30,6 +30,10 @@ Employee raise amounts entered in the % Up or $/hr Up fields are now
 automatically saved a moment after typing stops so data persists even if the
 page is refreshed.
 
+The "Reset Allocations" button now clears all saved allocation percentages on
+the server so slider values no longer revert when ranks are adjusted or panels
+are re-rendered.
+
 See `AGENTS.md` for repository contribution guidelines.
 
 To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:
