@@ -402,6 +402,7 @@
 
     function sortByRank() {
       const byDept = {};
+      const updates = [];
       currentEmps.forEach(e => {
         if (!byDept[e.dept]) byDept[e.dept] = [];
         byDept[e.dept].push(e);
@@ -410,11 +411,13 @@
         const list = byDept[d].sort((a, b) => a.rank - b.rank);
         list.forEach((emp, idx) => {
           emp.rank = idx + 1;
-          google.script.run.saveEmployeeRank(emp.name, emp.rank);
+          updates.push({ name: emp.name, rank: emp.rank });
         });
       });
+      google.script.run
+        .withSuccessHandler(loadData)
+        .saveEmployeeRanks(updates);
       rankSort = true;
-      renderDepartments();
     }
 
     function loadData() {
