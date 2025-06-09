@@ -45,6 +45,18 @@
       transform: translateY(-50%);
       max-height: 100px;
     }
+    #sortRanks {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
 
     /* ---------------- LOADING BAR STYLES ---------------- */
     #loadingContainer {
@@ -183,6 +195,15 @@
       flex: 0 0 auto;
       margin-right: 4px;
     }
+    .emp-rank {
+      width: 5ch;
+      padding: 2px 2px;
+      font-size: 0.88em;
+      height: var(--input-height);
+      text-align: right;
+      flex: 0 0 auto;
+      margin-right: 4px;
+    }
     /* New Rate amount styling */
     .emp-new-rate {
       color: green;
@@ -275,6 +296,7 @@
 
   <!-- HEADER: title centered + logo on right (with breathing room) -->
   <div id="header">
+    <button id="sortRanks" onclick="sortByRank()">Sort Rank</button>
     <h1 class="title">Dublin Cleaner’s Raise Allocation</h1>
     <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2024/12/Dublin-Logos-stacked.png" alt="Dublin Cleaners Logo">
   </div>
@@ -310,6 +332,7 @@
 
   <script>
     let currentDepts = [], currentEmps = [];
+    let rankSort = false;
     let loadStartTime = 0;
     let progressIntervalId;
 
@@ -334,6 +357,11 @@
         document.getElementById('loadingContainer').style.display = 'none';
         if (callback) callback();
       }, 300);
+    }
+
+    function sortByRank() {
+      rankSort = true;
+      renderDepartments();
     }
 
     function loadData() {
@@ -393,10 +421,11 @@
         const listBox = document.createElement('div');
         listBox.className = 'employee-list';
 
-        // Filter and sort employees by rate ascending (lowest-paid first)
+        // Filter employees for this department then sort
         const emps = currentEmps
           .filter(e => e.dept === dept.name)
-          .sort((a, b) => a.rate - b.rate);
+          .sort((a, b) => rankSort ? (a.rank - b.rank) : (a.rate - b.rate));
+        const empCount = emps.length;
 
         emps.forEach((emp, idx) => {
           const row = document.createElement('div');
@@ -404,6 +433,15 @@
           if (idx % 2 === 1) {
             row.classList.add('shaded');
           }
+
+          // Rank input
+          const rankInput = document.createElement('input');
+          rankInput.type = 'number';
+          rankInput.className = 'emp-rank';
+          rankInput.min = 1;
+          rankInput.max = empCount;
+          rankInput.value = emp.rank;
+          row.appendChild(rankInput);
 
           // Employee info block
           const info = document.createElement('div');
@@ -472,6 +510,22 @@
           hourlyInput.value = '0.00';
           hourlyInput.title = 'Enter exact $/hr increase';
           row.appendChild(hourlyInput);
+
+          // Rank change handler
+          rankInput.onchange = () => {
+            let val = parseInt(rankInput.value) || 1;
+            if (val < 1) val = 1;
+            if (val > empCount) val = empCount;
+            const other = currentEmps.find(e => e.dept === dept.name && e.rank === val);
+            if (other && other.name !== emp.name) {
+              other.rank = emp.rank;
+              google.script.run.saveEmployeeRank(other.name, other.rank);
+            }
+            emp.rank = val;
+            rankInput.value = val;
+            google.script.run.saveEmployeeRank(emp.name, val);
+            renderDepartments();
+          };
 
           // Function to update the displayed dollar amount (no label text)
           function updateNewRate() {
