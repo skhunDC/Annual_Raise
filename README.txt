@@ -18,6 +18,9 @@ The chosen rank sort setting is now saved on the server, so once the list has
 been sorted by rank it will continue to load in that order until "Sort Rank"
 is pressed again.
 
+When "Sort Rank" is pressed the screen now fades out and a loading bar
+appears until the sorting and saving completes.
+
 See `AGENTS.md` for repository contribution guidelines.
 
 To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:
