@@ -243,6 +243,25 @@ function saveEmployeeRank(empName, rank) {
   }
 }
 
+// Batch-save employee ranks then sort by department and rank
+function saveEmployeeRanks(rankList) {
+  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Employees');
+  const hdr = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
+  const rankIdx = hdr.indexOf('Rank');
+  if (rankIdx < 0) return;
+  const data = sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn()).getValues();
+  const nameToRow = {};
+  data.forEach((r,i)=>{ nameToRow[r[0]] = i+2; });
+  rankList.forEach(item => {
+    const row = nameToRow[item.name];
+    if (row) sh.getRange(row, rankIdx+1).setValue(item.rank);
+  });
+  if (sh.getLastRow() > 1) {
+    sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn())
+      .sort([{column:2, ascending:true}, {column:rankIdx+1, ascending:true}]);
+  }
+}
+
 // Entry point for UI
 function getDashboardData() {
   return [ getDepartments(), getEmployees() ];
