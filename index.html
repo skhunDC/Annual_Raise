@@ -426,9 +426,10 @@
     function loadData() {
       startLoadingBar();
       google.script.run
-        .withSuccessHandler(([d, e]) => {
+        .withSuccessHandler(([d, e, rs]) => {
           currentDepts = d;
           currentEmps = e;
+          rankSort = rs;
           renderDepartments();
           finishLoadingBar();
         })
@@ -713,9 +714,10 @@
       // Show loading bar and animate
       startLoadingBar();
       google.script.run
-        .withSuccessHandler(([d,e]) => {
+        .withSuccessHandler(([d,e,rs]) => {
           currentDepts = d;
           currentEmps = e;
+          rankSort = rs;
           populateEditTables();
           finishLoadingBar(() => {
             document.getElementById('editModal').style.display = 'block';

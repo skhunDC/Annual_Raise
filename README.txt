@@ -14,6 +14,10 @@ Sorting by rank now updates and saves the sequential ranks back to the
 spreadsheet, and the employee rows are reordered so the sort persists
 after refreshing the page.
 
+The chosen rank sort setting is now saved on the server, so once the list has
+been sorted by rank it will continue to load in that order until "Sort Rank"
+is pressed again.
+
 See `AGENTS.md` for repository contribution guidelines.
 
 To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:

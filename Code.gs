@@ -260,9 +260,18 @@ function saveEmployeeRanks(rankList) {
     sh.getRange(2,1,sh.getLastRow()-1,sh.getLastColumn())
       .sort([{column:2, ascending:true}, {column:rankIdx+1, ascending:true}]);
   }
+  setRankSort(true);
+}
+
+function setRankSort(flag) {
+  PropertiesService.getScriptProperties().setProperty('rankSort', flag ? 'true' : 'false');
+}
+
+function getRankSort() {
+  return PropertiesService.getScriptProperties().getProperty('rankSort') === 'true';
 }
 
 // Entry point for UI
 function getDashboardData() {
-  return [ getDepartments(), getEmployees() ];
+  return [ getDepartments(), getEmployees(), getRankSort() ];
 }
