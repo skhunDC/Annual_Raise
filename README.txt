@@ -39,5 +39,3 @@ Then include the deployed URL inside an iframe in your page:
 ```
 <iframe src="https://YOUR_WEB_APP_URL"></iframe>
 ```
-
-The interface now includes a playful animation that rains 🐱 and 🐶 emojis over the entire page.
