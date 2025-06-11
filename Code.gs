@@ -125,15 +125,19 @@ function initializeData() {
 // Read departments
 function getDepartments() {
   const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Departments');
-  const rows = sh.getRange(2,1,sh.getLastRow()-1,3).getValues();
-  return rows.map(r => ({ name:r[0], wages:r[1], pct:r[2] }));
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+  const rows = sh.getRange(2, 1, lastRow - 1, 3).getValues();
+  return rows.map(r => ({ name: r[0], wages: r[1], pct: r[2] }));
 }
 
 // Read employees + their saved allocation
 function getEmployees() {
   const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Employees');
   const lastCol = sh.getLastColumn();
-  const rows = sh.getRange(2,1,sh.getLastRow()-1,lastCol).getValues();
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+  const rows = sh.getRange(2, 1, lastRow - 1, lastCol).getValues();
   return rows.map(r => ({
     name:       r[0],
     dept:       r[1],
@@ -156,11 +160,14 @@ function saveDashboardData(departments, employees) {
   const existingAlloc = {};
   const existingRank  = {};
   if (allocIdx >= 0 || rankIdx >= 0) {
-    const data = empSh.getRange(2,1,empSh.getLastRow()-1,empSh.getLastColumn()).getValues();
-    data.forEach(r => {
-      if (allocIdx >= 0) existingAlloc[r[0]] = r[allocIdx];
-      if (rankIdx >= 0) existingRank[r[0]] = r[rankIdx];
-    });
+    const lastRow = empSh.getLastRow();
+    if (lastRow > 1) {
+      const data = empSh.getRange(2, 1, lastRow - 1, empSh.getLastColumn()).getValues();
+      data.forEach(r => {
+        if (allocIdx >= 0) existingAlloc[r[0]] = r[allocIdx];
+        if (rankIdx >= 0) existingRank[r[0]] = r[rankIdx];
+      });
+    }
   }
 
   // rewrite Departments
@@ -204,7 +211,9 @@ function saveDashboardData(departments, employees) {
 // Auto-save department slider
 function saveDepartmentAllocation(deptName, pct) {
   const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Departments');
-  const vals = sh.getRange(2,1,sh.getLastRow()-1,3).getValues();
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return;
+  const vals = sh.getRange(2, 1, lastRow - 1, 3).getValues();
   for (let i=0;i<vals.length;i++) {
     if (vals[i][0] === deptName) {
       sh.getRange(i+2,3).setValue(pct);
@@ -219,7 +228,9 @@ function saveEmployeeAllocation(empName, allocationPct) {
   const hdr = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
   const idx = hdr.indexOf('AllocationPercent');
   if (idx < 0) return;
-  const data = sh.getRange(2,1,sh.getLastRow()-1,1).getValues();
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return;
+  const data = sh.getRange(2, 1, lastRow - 1, 1).getValues();
   for (let i=0;i<data.length;i++) {
     if (data[i][0] === empName) {
       sh.getRange(i+2, idx+1).setValue(allocationPct);
@@ -234,7 +245,9 @@ function saveEmployeeRank(empName, rank) {
   const hdr = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
   const idx = hdr.indexOf('Rank');
   if (idx < 0) return;
-  const data = sh.getRange(2,1,sh.getLastRow()-1,1).getValues();
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return;
+  const data = sh.getRange(2, 1, lastRow - 1, 1).getValues();
   for (let i=0;i<data.length;i++) {
     if (data[i][0] === empName) {
       sh.getRange(i+2, idx+1).setValue(rank);

@@ -39,3 +39,7 @@ Then include the deployed URL inside an iframe in your page:
 ```
 <iframe src="https://YOUR_WEB_APP_URL"></iframe>
 ```
+
+Bug Fixes
+---------
+- Fixed server functions to handle empty sheets without errors.
