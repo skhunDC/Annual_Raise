@@ -639,12 +639,14 @@
             const hrInc = emp.rate * (pctEmp / 100);
             hourlyInput.value = hrInc.toFixed(2);
 
+            emp.allocation = pctEmp;
             updateNewRate();
             updateRemaining();
           };
 
           // Slider onchange: persist allocation
           es.onchange = () => {
+            emp.allocation = Number(es.value);
             google.script.run.saveEmployeeAllocation(emp.name, Number(es.value));
           };
 
@@ -662,6 +664,7 @@
             const hrInc = emp.rate * (pctVal / 100);
             hourlyInput.value = hrInc.toFixed(2);
 
+            emp.allocation = pctVal;
             updateNewRate();
             updateRemaining();
             saveAllocDebounced(pctVal);
@@ -676,6 +679,7 @@
             es.value = clampedPct;
             percentInput.value = clampedPct.toFixed(2);
 
+            emp.allocation = clampedPct;
             updateNewRate();
             updateRemaining();
             saveAllocDebounced(clampedPct);

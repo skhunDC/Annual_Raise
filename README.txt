@@ -43,3 +43,4 @@ Then include the deployed URL inside an iframe in your page:
 Bug Fixes
 ---------
 - Fixed server functions to handle empty sheets without errors.
+- Fixed rank change resetting raise inputs by keeping allocations in memory.
