@@ -44,3 +44,8 @@ Bug Fixes
 ---------
 - Fixed server functions to handle empty sheets without errors.
 - Fixed rank change resetting raise inputs by keeping allocations in memory.
+
+New Features
+------------
+- Added bilingual booking calendar for scheduling employee review meetings.
+
