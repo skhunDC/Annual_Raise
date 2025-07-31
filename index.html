@@ -549,7 +549,8 @@
           es.min = 0; 
           es.max = 40;  // slider max 40%
           es.step = 0.45;
-          es.value = emp.allocation;
+          const pctFromHr = emp.rate > 0 ? (Number(emp.hourlyIncrease || 0) / emp.rate) * 100 : Number(emp.allocation);
+          es.value = pctFromHr;
           es.className = 'emp-slider';
           row.appendChild(es);
 
@@ -572,7 +573,7 @@
           percentInput.step = '0.01';
           percentInput.min = '0';
           percentInput.max = '40';
-          percentInput.value = Number(emp.allocation).toFixed(2);
+          percentInput.value = pctFromHr.toFixed(2);
           percentInput.title = 'Enter exact %';
           row.appendChild(percentInput);
 
@@ -636,11 +637,12 @@
           es.oninput = () => {
             const pctEmp = Number(es.value);
             percentInput.value = pctEmp.toFixed(2);
-            const hrInc = emp.rate * (pctEmp / 100);
+            let hrInc = emp.rate * (pctEmp / 100);
+            hrInc = Math.round(hrInc * 100) / 100;
             hourlyInput.value = hrInc.toFixed(2);
 
             emp.allocation = pctEmp;
-            emp.hourlyIncrease = parseFloat(hourlyInput.value) || 0;
+            emp.hourlyIncrease = hrInc;
             updateNewRate();
             updateRemaining();
           };
@@ -666,7 +668,8 @@
             percentInput.value = pctVal.toFixed(2);
             es.value = pctVal;
 
-            const hrInc = emp.rate * (pctVal / 100);
+            let hrInc = emp.rate * (pctVal / 100);
+            hrInc = Math.round(hrInc * 100) / 100;
             hourlyInput.value = hrInc.toFixed(2);
 
             emp.allocation = pctVal;
@@ -695,10 +698,12 @@
           };
 
           // Initialize the hourlyInput & newRateDiv on first render
-          const initialPct = Number(emp.allocation);
-          const initialHrInc = emp.hourlyIncrease != null ? emp.hourlyIncrease : emp.rate * (initialPct / 100);
+          const initialHrInc = Number(emp.hourlyIncrease || 0);
           hourlyInput.value = initialHrInc.toFixed(2);
+          percentInput.value = pctFromHr.toFixed(2);
+          es.value = pctFromHr;
           emp.hourlyIncrease = initialHrInc;
+          emp.allocation = pctFromHr;
           updateNewRate();
 
           // Append this row to the listBox
