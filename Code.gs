@@ -144,15 +144,23 @@ function getEmployees() {
   const lastCol = sh.getLastColumn();
   const lastRow = sh.getLastRow();
   if (lastRow < 2) return [];
+  const header = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+  const nameIdx  = header.indexOf('Name');
+  const deptIdx  = header.indexOf('Department');
+  const rateIdx  = header.indexOf('HourlyRate');
+  const hrsIdx   = header.indexOf('AnnualHours');
+  const allocIdx = header.indexOf('AllocationPercent');
+  const incIdx   = header.indexOf('HourlyIncrease');
+  const rankIdx  = header.indexOf('Rank');
   const rows = sh.getRange(2, 1, lastRow - 1, lastCol).getValues();
   return rows.map(r => ({
-    name:           r[0],
-    dept:           r[1],
-    rate:           r[2],
-    hours:          r[3],
-    allocation:     r[4] || 0,
-    hourlyIncrease: r[5] || 0,
-    rank:           r[6] || 1
+    name:           nameIdx  >= 0 ? r[nameIdx]  : '',
+    dept:           deptIdx  >= 0 ? r[deptIdx]  : '',
+    rate:           rateIdx  >= 0 ? r[rateIdx]  : 0,
+    hours:          hrsIdx   >= 0 ? r[hrsIdx]   : 0,
+    allocation:     allocIdx >= 0 ? (r[allocIdx] || 0) : 0,
+    hourlyIncrease: incIdx   >= 0 ? (r[incIdx]   || 0) : 0,
+    rank:           rankIdx  >= 0 ? (r[rankIdx]  || 1) : 1
   }));
 }
 
