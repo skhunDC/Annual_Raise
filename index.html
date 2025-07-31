@@ -640,6 +640,7 @@
             hourlyInput.value = hrInc.toFixed(2);
 
             emp.allocation = pctEmp;
+            emp.hourlyIncrease = parseFloat(hourlyInput.value) || 0;
             updateNewRate();
             updateRemaining();
           };
@@ -647,11 +648,15 @@
           // Slider onchange: persist allocation
           es.onchange = () => {
             emp.allocation = Number(es.value);
-            google.script.run.saveEmployeeAllocation(emp.name, Number(es.value));
+            emp.hourlyIncrease = parseFloat(hourlyInput.value) || 0;
+            google.script.run.saveEmployeeAllocation(emp.name, emp.allocation);
+            google.script.run.saveEmployeeHourlyIncrease(emp.name, emp.hourlyIncrease);
           };
 
           const saveAlloc = pct => google.script.run.saveEmployeeAllocation(emp.name, pct);
           const saveAllocDebounced = debounce(saveAlloc, 600);
+          const saveInc = amt => google.script.run.saveEmployeeHourlyIncrease(emp.name, amt);
+          const saveIncDebounced = debounce(saveInc, 600);
 
           // Percent input oninput: recalc slider, hourlyInput, then update new rate & save
           percentInput.oninput = () => {
@@ -665,9 +670,11 @@
             hourlyInput.value = hrInc.toFixed(2);
 
             emp.allocation = pctVal;
+            emp.hourlyIncrease = hrInc;
             updateNewRate();
             updateRemaining();
             saveAllocDebounced(pctVal);
+            saveIncDebounced(hrInc);
           };
 
           // Hourly input oninput: recalc slider & percentInput, then update new rate & save
@@ -680,15 +687,18 @@
             percentInput.value = clampedPct.toFixed(2);
 
             emp.allocation = clampedPct;
+            emp.hourlyIncrease = hrVal;
             updateNewRate();
             updateRemaining();
             saveAllocDebounced(clampedPct);
+            saveIncDebounced(hrVal);
           };
 
           // Initialize the hourlyInput & newRateDiv on first render
           const initialPct = Number(emp.allocation);
-          const initialHrInc = emp.rate * (initialPct / 100);
+          const initialHrInc = emp.hourlyIncrease != null ? emp.hourlyIncrease : emp.rate * (initialPct / 100);
           hourlyInput.value = initialHrInc.toFixed(2);
+          emp.hourlyIncrease = initialHrInc;
           updateNewRate();
 
           // Append this row to the listBox
@@ -738,7 +748,7 @@
     function resetAllocations() {
       if (!confirm("Are you sure you want to reset All Allocations?")) return;
       currentDepts.forEach(d => d.pct = 0);
-      currentEmps.forEach(e => e.allocation = 0);
+      currentEmps.forEach(e => { e.allocation = 0; e.hourlyIncrease = 0; });
       google.script.run.resetAllAllocations();
       document.querySelectorAll('.department .slider, .department .emp-slider').forEach(sl => {
         sl.value = 0;

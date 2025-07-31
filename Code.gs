@@ -25,19 +25,26 @@ function initializeData() {
       .setValues(sampleDepts);
   }
 
-  // -- Employees sheet, with AllocationPercent migration/seed --
+  // -- Employees sheet, with AllocationPercent, HourlyIncrease migration/seed --
   let empSheet = ss.getSheetByName('Employees');
   if (!empSheet) {
     empSheet = ss.insertSheet('Employees');
     // header with allocation and ranking columns
-    empSheet.getRange('A1:F1')
-      .setValues([['Name','Department','HourlyRate','AnnualHours','AllocationPercent','Rank']]);
+    empSheet.getRange('A1:G1')
+      .setValues([['Name','Department','HourlyRate','AnnualHours','AllocationPercent','HourlyIncrease','Rank']]);
   } else {
-    // ensure AllocationPercent and Rank columns exist
+    // ensure AllocationPercent, HourlyIncrease and Rank columns exist
     const header = empSheet.getRange(1,1,1,empSheet.getLastColumn()).getValues()[0];
     let col = header.length;
     if (header.indexOf('AllocationPercent') < 0) {
       empSheet.getRange(1, ++col).setValue('AllocationPercent');
+      const numRows = empSheet.getLastRow() - 1;
+      if (numRows > 0) {
+        empSheet.getRange(2, col, numRows).setValue(0);
+      }
+    }
+    if (header.indexOf('HourlyIncrease') < 0) {
+      empSheet.getRange(1, ++col).setValue('HourlyIncrease');
       const numRows = empSheet.getLastRow() - 1;
       if (numRows > 0) {
         empSheet.getRange(2, col, numRows).setValue(0);
@@ -117,8 +124,8 @@ function initializeData() {
       { name: 'Adele Thomasson',       rate:36.04, hours:1800 },
       { name: 'Ashley Whightsel',      rate:16.00, hours:1800 }
     ];
-    const out = sampleEmps.map((e,i) => [e.name,'',e.rate,e.hours,0,i+1]);
-    empSheet.getRange(2,1,out.length,6).setValues(out);
+    const out = sampleEmps.map((e,i) => [e.name,'',e.rate,e.hours,0,0,i+1]);
+    empSheet.getRange(2,1,out.length,7).setValues(out);
   }
 }
 
@@ -139,12 +146,13 @@ function getEmployees() {
   if (lastRow < 2) return [];
   const rows = sh.getRange(2, 1, lastRow - 1, lastCol).getValues();
   return rows.map(r => ({
-    name:       r[0],
-    dept:       r[1],
-    rate:       r[2],
-    hours:      r[3],
-    allocation: r[4] || 0,
-    rank:       r[5] || 1
+    name:           r[0],
+    dept:           r[1],
+    rate:           r[2],
+    hours:          r[3],
+    allocation:     r[4] || 0,
+    hourlyIncrease: r[5] || 0,
+    rank:           r[6] || 1
   }));
 }
 
@@ -156,15 +164,18 @@ function saveDashboardData(departments, employees) {
   const empSh = ss.getSheetByName('Employees');
   const hdr = empSh.getRange(1,1,1,empSh.getLastColumn()).getValues()[0];
   const allocIdx = hdr.indexOf('AllocationPercent');
+  const incIdx   = hdr.indexOf('HourlyIncrease');
   const rankIdx  = hdr.indexOf('Rank');
   const existingAlloc = {};
+  const existingInc   = {};
   const existingRank  = {};
-  if (allocIdx >= 0 || rankIdx >= 0) {
+  if (allocIdx >= 0 || rankIdx >= 0 || incIdx >= 0) {
     const lastRow = empSh.getLastRow();
     if (lastRow > 1) {
       const data = empSh.getRange(2, 1, lastRow - 1, empSh.getLastColumn()).getValues();
       data.forEach(r => {
         if (allocIdx >= 0) existingAlloc[r[0]] = r[allocIdx];
+        if (incIdx >= 0)   existingInc[r[0]]   = r[incIdx];
         if (rankIdx >= 0) existingRank[r[0]] = r[rankIdx];
       });
     }
@@ -181,8 +192,8 @@ function saveDashboardData(departments, employees) {
 
   // rewrite Employees (with preserved allocations and ranks)
   empSh.clearContents();
-  empSh.getRange('A1:F1')
-    .setValues([['Name','Department','HourlyRate','AnnualHours','AllocationPercent','Rank']]);
+  empSh.getRange('A1:G1')
+    .setValues([['Name','Department','HourlyRate','AnnualHours','AllocationPercent','HourlyIncrease','Rank']]);
   if (employees.length) {
     const byDept = {};
     employees.forEach(e => {
@@ -200,11 +211,12 @@ function saveDashboardData(departments, employees) {
       });
       list.forEach((e,i)=>{
         const alloc = existingAlloc[e.name] || 0;
+        const inc   = existingInc[e.name]   || 0;
         const rank  = existingRank[e.name] != null ? existingRank[e.name] : (i+1);
-        out.push([e.name, e.dept, e.rate, e.hours, alloc, rank]);
+        out.push([e.name, e.dept, e.rate, e.hours, alloc, inc, rank]);
       });
     });
-    empSh.getRange(2,1,out.length,6).setValues(out);
+    empSh.getRange(2,1,out.length,7).setValues(out);
   }
 }
 
@@ -234,6 +246,23 @@ function saveEmployeeAllocation(empName, allocationPct) {
   for (let i=0;i<data.length;i++) {
     if (data[i][0] === empName) {
       sh.getRange(i+2, idx+1).setValue(allocationPct);
+      return;
+    }
+  }
+}
+
+// Auto-save employee hourly increase
+function saveEmployeeHourlyIncrease(empName, hourlyInc) {
+  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Employees');
+  const hdr = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
+  const idx = hdr.indexOf('HourlyIncrease');
+  if (idx < 0) return;
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return;
+  const data = sh.getRange(2, 1, lastRow - 1, 1).getValues();
+  for (let i=0;i<data.length;i++) {
+    if (data[i][0] === empName) {
+      sh.getRange(i+2, idx+1).setValue(hourlyInc);
       return;
     }
   }
@@ -273,8 +302,12 @@ function resetAllAllocations() {
   if (es) {
     const hdr = es.getRange(1, 1, 1, es.getLastColumn()).getValues()[0];
     const idx = hdr.indexOf('AllocationPercent');
+    const inc = hdr.indexOf('HourlyIncrease');
     if (idx >= 0 && es.getLastRow() > 1) {
       es.getRange(2, idx + 1, es.getLastRow() - 1, 1).setValue(0);
+    }
+    if (inc >= 0 && es.getLastRow() > 1) {
+      es.getRange(2, inc + 1, es.getLastRow() - 1, 1).setValue(0);
     }
   }
 }
