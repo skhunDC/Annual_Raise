@@ -47,3 +47,4 @@ Bug Fixes
 - Added a new "HourlyIncrease" column so $/hr adjustments are saved exactly as entered.
 - Fixed ranking column detection so ranks load correctly on older sheets.
 - Hourly increase now drives percent and slider values so exact cents persist.
+- Fixed hourly increase initialization so saved percentages remain when $/hr is blank.
