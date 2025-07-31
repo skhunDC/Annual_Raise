@@ -23,6 +23,10 @@ The "Reset Allocations" button now clears all saved allocation percentages on
 the server so slider values no longer revert when ranks are adjusted or panels
 are re-rendered.
 
+A "Save" button is available in the page header. Clicking it manually persists
+all current department and employee allocations, hourly increases, and ranks to
+the spreadsheet as a fallback to the automatic saves.
+
 See `AGENTS.md` for repository contribution guidelines.
 
 To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:
