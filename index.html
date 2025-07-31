@@ -38,6 +38,19 @@
       font-weight: bold;
       color: var(--accent);
     }
+    #header #saveBtn {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2em;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+    }
     #header #logo {
       position: absolute;
       right: 20px;
@@ -351,6 +364,7 @@
 
   <!-- HEADER: title centered + logo on right (with breathing room) -->
   <div id="header">
+    <button id="saveBtn" onclick="manualSave()">💾 Save</button>
     <h1 class="title">Dublin Cleaner’s Raise Allocation</h1>
     <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2024/12/Dublin-Logos-stacked.png" alt="Dublin Cleaners Logo">
   </div>
@@ -762,6 +776,18 @@
         sl.value = 0;
         sl.dispatchEvent(new Event('input'));
       });
+    }
+
+    function manualSave() {
+      currentDepts.forEach(d => {
+        google.script.run.saveDepartmentAllocation(d.name, Number(d.pct));
+      });
+      currentEmps.forEach(e => {
+        google.script.run.saveEmployeeAllocation(e.name, Number(e.allocation));
+        google.script.run.saveEmployeeHourlyIncrease(e.name, Number(e.hourlyIncrease));
+        google.script.run.saveEmployeeRank(e.name, e.rank);
+      });
+      alert('All data saved');
     }
 
     function editData() {
