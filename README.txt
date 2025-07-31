@@ -45,3 +45,4 @@ Bug Fixes
 - Fixed server functions to handle empty sheets without errors.
 - Fixed rank change resetting raise inputs by keeping allocations in memory.
 - Added a new "HourlyIncrease" column so $/hr adjustments are saved exactly as entered.
+- Fixed ranking column detection so ranks load correctly on older sheets.
