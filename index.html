@@ -549,7 +549,9 @@
           es.min = 0; 
           es.max = 40;  // slider max 40%
           es.step = 0.45;
-          const pctFromHr = emp.rate > 0 ? (Number(emp.hourlyIncrease || 0) / emp.rate) * 100 : Number(emp.allocation);
+          const savedHr = Number(emp.hourlyIncrease || 0);
+          const useHr = savedHr !== 0 && emp.rate > 0;
+          const pctFromHr = useHr ? (savedHr / emp.rate) * 100 : Number(emp.allocation);
           es.value = pctFromHr;
           es.className = 'emp-slider';
           row.appendChild(es);
@@ -698,7 +700,7 @@
           };
 
           // Initialize the hourlyInput & newRateDiv on first render
-          const initialHrInc = Number(emp.hourlyIncrease || 0);
+          const initialHrInc = useHr ? savedHr : emp.rate * (Number(emp.allocation) / 100);
           hourlyInput.value = initialHrInc.toFixed(2);
           percentInput.value = pctFromHr.toFixed(2);
           es.value = pctFromHr;
