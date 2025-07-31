@@ -48,3 +48,4 @@ Bug Fixes
 - Fixed ranking column detection so ranks load correctly on older sheets.
 - Hourly increase now drives percent and slider values so exact cents persist.
 - Fixed hourly increase initialization so saved percentages remain when $/hr is blank.
+- Fixed rounding so $/hr values like 1.00 are not increased to 1.01.
