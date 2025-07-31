@@ -26,6 +26,7 @@ are re-rendered.
 A "Save" button is available in the page header. Clicking it manually persists
 all current department and employee allocations, hourly increases, and ranks to
 the spreadsheet as a fallback to the automatic saves.
+Pressing the Save button now briefly displays a "Saved!" message as confirmation.
 
 See `AGENTS.md` for repository contribution guidelines.
 

@@ -51,6 +51,15 @@
       color: #fff;
       cursor: pointer;
     }
+    #header #saveMsg {
+      position: absolute;
+      left: 130px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: bold;
+      color: var(--accent);
+      display: none;
+    }
     #header #logo {
       position: absolute;
       right: 20px;
@@ -365,6 +374,7 @@
   <!-- HEADER: title centered + logo on right (with breathing room) -->
   <div id="header">
     <button id="saveBtn" onclick="manualSave()">💾 Save</button>
+    <span id="saveMsg">Saved!</span>
     <h1 class="title">Dublin Cleaner’s Raise Allocation</h1>
     <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2024/12/Dublin-Logos-stacked.png" alt="Dublin Cleaners Logo">
   </div>
@@ -402,6 +412,7 @@
     let currentDepts = [], currentEmps = [];
     let loadStartTime = 0;
     let progressIntervalId;
+    let saveMsgTimeout;
 
     function debounce(fn, delay) {
       let id;
@@ -787,7 +798,14 @@
         google.script.run.saveEmployeeHourlyIncrease(e.name, Number(e.hourlyIncrease));
         google.script.run.saveEmployeeRank(e.name, e.rank);
       });
-      alert('All data saved');
+      showSavedMessage();
+    }
+
+    function showSavedMessage() {
+      const msg = document.getElementById("saveMsg");
+      msg.style.display = "block";
+      clearTimeout(saveMsgTimeout);
+      saveMsgTimeout = setTimeout(() => msg.style.display = "none", 2000);
     }
 
     function editData() {
