@@ -640,7 +640,7 @@
             const pctEmp = Number(es.value);
             percentInput.value = pctEmp.toFixed(2);
             let hrInc = emp.rate * (pctEmp / 100);
-            hrInc = Math.round(hrInc * 100) / 100;
+            hrInc = Math.floor(hrInc * 100) / 100;
             hourlyInput.value = hrInc.toFixed(2);
 
             emp.allocation = pctEmp;
@@ -671,7 +671,7 @@
             es.value = pctVal;
 
             let hrInc = emp.rate * (pctVal / 100);
-            hrInc = Math.round(hrInc * 100) / 100;
+            hrInc = Math.floor(hrInc * 100) / 100;
             hourlyInput.value = hrInc.toFixed(2);
 
             emp.allocation = pctVal;
