@@ -50,3 +50,4 @@ Bug Fixes
 - Fixed hourly increase initialization so saved percentages remain when $/hr is blank.
 - Fixed rounding so $/hr values like 1.00 are not increased to 1.01.
 - Enforced two-decimal rounding for $/hr increases when editing or loading employees.
+- Removed extra rounding and set the employee slider step to 0.01 so cent values persist exactly.
