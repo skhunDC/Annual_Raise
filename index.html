@@ -686,6 +686,8 @@
           hourlyInput.oninput = () => {
             let hrVal = parseFloat(hourlyInput.value) || 0;
             if (hrVal < 0) hrVal = 0;
+            hrVal = Math.floor(hrVal * 100) / 100;
+            hourlyInput.value = hrVal.toFixed(2);
             const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
             const clampedPct = Math.min(40, pctVal);
             es.value = clampedPct;
@@ -700,7 +702,8 @@
           };
 
           // Initialize the hourlyInput & newRateDiv on first render
-          const initialHrInc = useHr ? savedHr : emp.rate * (Number(emp.allocation) / 100);
+          const initialHrIncRaw = useHr ? savedHr : emp.rate * (Number(emp.allocation) / 100);
+          const initialHrInc = Math.floor(initialHrIncRaw * 100) / 100;
           hourlyInput.value = initialHrInc.toFixed(2);
           percentInput.value = pctFromHr.toFixed(2);
           es.value = pctFromHr;
