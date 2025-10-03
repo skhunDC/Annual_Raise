@@ -255,8 +255,8 @@
       grid-template-columns: auto 1fr minmax(0, auto);
       grid-template-areas:
         "rank info adjustments"
-        "slider slider slider"
-        "rate rate rate";
+        "rate rate rate"
+        "slider slider slider";
       gap: 10px;
       padding: 12px;
       border-radius: var(--radius-sm);
@@ -398,6 +398,9 @@
       margin: 0;
       white-space: nowrap;
       grid-area: rate;
+      text-align: center;
+      justify-self: center;
+      align-self: center;
     }
     /* ---------------- EDIT DATA MODAL STYLES ---------------- */
     #editModal {
