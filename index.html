@@ -945,6 +945,11 @@
           const savedHr = Number(emp.hourlyIncrease || 0);
           const useHr = savedHr !== 0 && emp.rate > 0;
           const pctFromHr = useHr ? (savedHr / emp.rate) * 100 : Number(emp.allocation);
+          const formatPercentDisplay = value =>
+            Number.isFinite(value) && value !== 0 ? value.toFixed(2) : '';
+
+          const formatHourlyDisplay = value =>
+            Number.isFinite(value) && value !== 0 ? value.toFixed(2) : '';
           es.value = pctFromHr;
           es.className = 'emp-slider';
           es.disabled = !editingEnabled;
@@ -961,7 +966,7 @@
           percentInput.step = '0.01';
           percentInput.min = '0';
           percentInput.max = '40';
-          percentInput.value = pctFromHr.toFixed(2);
+          percentInput.value = formatPercentDisplay(pctFromHr);
           percentInput.title = 'Enter exact %';
           percentInput.disabled = !editingEnabled;
           const percentField = document.createElement('label');
@@ -978,7 +983,7 @@
           hourlyInput.className = 'emp-hourly';
           hourlyInput.step = '0.01';
           hourlyInput.min = '0';
-          hourlyInput.value = '0.00';
+          hourlyInput.value = '';
           hourlyInput.title = 'Enter exact $/hr increase';
           hourlyInput.disabled = !editingEnabled;
           const hourlyField = document.createElement('label');
@@ -991,7 +996,7 @@
           adjustments.appendChild(hourlyField);
 
           const updateNewRate = () => {
-            const pct = parseFloat(percentInput.value) || 0;
+            const pct = Number(emp.allocation) || 0;
             const newRate = emp.rate * (1 + pct / 100);
             newRateDiv.textContent = `$${newRate.toFixed(2)}/hr`;
           };
@@ -1036,9 +1041,9 @@
 
             es.oninput = () => {
               const pctEmp = Number(es.value);
-              percentInput.value = pctEmp.toFixed(2);
+              percentInput.value = formatPercentDisplay(pctEmp);
               const hrInc = parseFloat((emp.rate * (pctEmp / 100)).toFixed(2));
-              hourlyInput.value = hrInc.toFixed(2);
+              hourlyInput.value = formatHourlyDisplay(hrInc);
 
               emp.allocation = pctEmp;
               emp.hourlyIncrease = hrInc;
@@ -1053,47 +1058,144 @@
               google.script.run.saveEmployeeHourlyIncrease(emp.name, emp.hourlyIncrease);
             };
 
-            percentInput.oninput = () => {
-              let pctVal = parseFloat(percentInput.value) || 0;
-              if (pctVal < 0) pctVal = 0;
-              if (pctVal > 40) pctVal = 40;
-              percentInput.value = pctVal.toFixed(2);
-              es.value = pctVal;
+            const clampPercent = val => {
+              const num = Number.isFinite(val) ? val : 0;
+              return Math.min(Math.max(num, 0), 40);
+            };
 
-              const hrInc = parseFloat((emp.rate * (pctVal / 100)).toFixed(2));
-              hourlyInput.value = hrInc.toFixed(2);
+            const computeHourlyFromPercent = pct =>
+              parseFloat((emp.rate * (pct / 100)).toFixed(2));
 
-              emp.allocation = pctVal;
+            const isIncompleteNumber = value =>
+              value === '' || value === '.' || value === '-' || value === '-.';
+
+            const applyPercentChange = (
+              pctVal,
+              { formatPercentField = false, syncHourlyField = true } = {}
+            ) => {
+              const clampedPct = clampPercent(pctVal);
+              const hrInc = computeHourlyFromPercent(clampedPct);
+              es.value = clampedPct;
+              if (syncHourlyField) {
+                hourlyInput.value = formatHourlyDisplay(hrInc);
+              }
+              if (formatPercentField) {
+                percentInput.value = formatPercentDisplay(clampedPct);
+              }
+
+              emp.allocation = clampedPct;
               emp.hourlyIncrease = hrInc;
               updateNewRate();
               updateRemaining();
-              saveAllocDebounced(pctVal);
+              saveAllocDebounced(clampedPct);
               saveIncDebounced(hrInc);
+
+              return { clampedPct, hrInc };
+            };
+
+            percentInput.oninput = () => {
+              const raw = percentInput.value.trim();
+              if (isIncompleteNumber(raw)) {
+                return;
+              }
+
+              let pctVal = parseFloat(raw);
+              if (Number.isNaN(pctVal)) {
+                return;
+              }
+
+              const { clampedPct } = applyPercentChange(pctVal, {
+                formatPercentField: false,
+                syncHourlyField: true,
+              });
+
+              if (clampedPct !== pctVal) {
+                percentInput.value = clampedPct === 0 ? '' : clampedPct.toString();
+              }
+            };
+
+            percentInput.onblur = () => {
+              const raw = percentInput.value.trim();
+              if (raw === '') {
+                applyPercentChange(0, {
+                  formatPercentField: true,
+                  syncHourlyField: true,
+                });
+                percentInput.value = '';
+                return;
+              }
+
+              let pctVal = parseFloat(raw);
+              if (Number.isNaN(pctVal)) {
+                applyPercentChange(0, {
+                  formatPercentField: true,
+                  syncHourlyField: true,
+                });
+                percentInput.value = '';
+                return;
+              }
+              applyPercentChange(pctVal, {
+                formatPercentField: true,
+                syncHourlyField: true,
+              });
             };
 
             hourlyInput.oninput = () => {
-              let hrVal = parseFloat(hourlyInput.value) || 0;
-              if (hrVal < 0) hrVal = 0;
-              hrVal = parseFloat(hrVal.toFixed(2));
-              hourlyInput.value = hrVal.toFixed(2);
-              const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
-              const clampedPct = Math.min(40, pctVal);
-              es.value = clampedPct;
-              percentInput.value = clampedPct.toFixed(2);
+              const raw = hourlyInput.value.trim();
+              if (isIncompleteNumber(raw)) {
+                return;
+              }
 
-              emp.allocation = clampedPct;
-              emp.hourlyIncrease = hrVal;
-              updateNewRate();
-              updateRemaining();
-              saveAllocDebounced(clampedPct);
-              saveIncDebounced(hrVal);
+              let hrVal = parseFloat(raw);
+              if (Number.isNaN(hrVal)) {
+                return;
+              }
+
+              if (hrVal < 0) {
+                hrVal = 0;
+                hourlyInput.value = '';
+              }
+
+              const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
+              const { clampedPct, hrInc } = applyPercentChange(pctVal, {
+                formatPercentField: true,
+                syncHourlyField: false,
+              });
+
+              if (pctVal > clampedPct) {
+                hourlyInput.value = formatHourlyDisplay(hrInc);
+              }
+            };
+
+            hourlyInput.onblur = () => {
+              const raw = hourlyInput.value.trim();
+              if (raw === '') {
+                applyPercentChange(0, {
+                  formatPercentField: true,
+                  syncHourlyField: true,
+                });
+                hourlyInput.value = '';
+                return;
+              }
+
+              let hrVal = parseFloat(raw);
+              if (Number.isNaN(hrVal) || hrVal < 0) {
+                hrVal = 0;
+              }
+
+              const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
+              const { hrInc } = applyPercentChange(pctVal, {
+                formatPercentField: true,
+                syncHourlyField: true,
+              });
+              hourlyInput.value = formatHourlyDisplay(hrInc);
             };
           }
 
           const initialHrIncRaw = useHr ? savedHr : emp.rate * (Number(emp.allocation) / 100);
           const initialHrInc = parseFloat(initialHrIncRaw.toFixed(2));
-          hourlyInput.value = initialHrInc.toFixed(2);
-          percentInput.value = pctFromHr.toFixed(2);
+          hourlyInput.value = formatHourlyDisplay(initialHrInc);
+          percentInput.value = formatPercentDisplay(pctFromHr);
           es.value = pctFromHr;
           emp.hourlyIncrease = initialHrInc;
           emp.allocation = pctFromHr;

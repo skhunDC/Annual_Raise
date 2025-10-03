@@ -90,3 +90,5 @@ Bug Fixes
 - Enforced two-decimal rounding for $/hr increases when editing or loading employees.
 - Removed extra rounding and set the employee slider step to 0.01 so cent values persist exactly.
 - Adjusted position of the "Saved!" message so it no longer overlaps the Save button.
+- Smoothed typing in the % and $/hr inputs so values are only formatted after entry is complete.
+- Cleared the % and $/hr inputs by default so new rows start blank instead of showing 0.00.
