@@ -53,6 +53,8 @@ Responsive Design Refresh
   and touch-friendly buttons that adapt to available width.
 - Restyled employee rows to reflow into stacked sections on narrow screens
   while preserving the original horizontal layout on large displays.
+- Expanded large-screen department columns so three-card layouts have generous
+  width for the rank, slider, and pay data without horizontal scrolling.
 
 See `AGENTS.md` for repository contribution guidelines.
 
