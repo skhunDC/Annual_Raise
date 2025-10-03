@@ -66,6 +66,8 @@ Responsive Design Refresh
   width for the rank, slider, and pay data without horizontal scrolling.
 - Removed the raise/percent/hourly column headers and tightened the minimum
   department card width for a more compact grid on all breakpoints.
+- Reduced the header logo and title scale to keep the hero area compact on
+  smaller displays, with the logo capped at 60px wide.
 
 Edit Data Workspace
 -------------------
