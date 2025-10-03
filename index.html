@@ -83,6 +83,88 @@
       height: auto;
       justify-self: flex-start;
     }
+    .year-controls {
+      display: grid;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: rgba(0, 0, 0, 0.03);
+    }
+    .year-select-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .year-select-wrap label {
+      font-weight: 600;
+    }
+    .year-select-wrap select {
+      flex: 1 1 160px;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      font-size: 1rem;
+    }
+    .year-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .year-buttons button {
+      flex: 1 1 180px;
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--accent);
+      background: rgba(0, 115, 230, 0.12);
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .year-buttons button:active {
+      transform: translateY(1px);
+    }
+    .year-buttons button:disabled {
+      background: #e3e6eb;
+      color: #7a7a7a;
+      border-color: #d0d0d0;
+      box-shadow: none;
+      transform: none;
+    }
+    .year-hint {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .year-notice {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.95rem;
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--text-color);
+    }
+    .year-notice.historical {
+      background: rgba(196, 23, 0, 0.12);
+      color: #a22020;
+    }
+    .year-notice.active {
+      background: rgba(0, 115, 230, 0.12);
+      color: var(--accent);
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    #header #saveBtn:disabled {
+      background: #a8c7f0;
+      box-shadow: none;
+    }
 
     main {
       flex: 1 1 auto;
@@ -434,47 +516,84 @@
 
     @media (min-width: 768px) {
       #header {
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+          'title logo'
+          'actions actions'
+          'years years'
+          'notice notice';
         align-items: center;
       }
       .header-actions {
-        order: 1;
+        grid-area: actions;
+        justify-content: flex-start;
       }
       #header .title {
-        order: 2;
-        text-align: center;
+        grid-area: title;
+        text-align: left;
       }
       #header #logo {
-        order: 3;
+        grid-area: logo;
         justify-self: end;
         max-width: 200px;
       }
-      #header #saveMsg {
-        order: 4;
+      .year-controls {
+        grid-area: years;
+      }
+      #yearNotice {
+        grid-area: notice;
       }
     }
 
-    @media (min-width: 1024px) {
+
+@media (min-width: 1024px) {
+      #header {
+        grid-template-columns: 1.2fr 1.2fr 1fr;
+        grid-template-areas:
+          'title title logo'
+          'actions years years'
+          'notice years years';
+      }
+      .year-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 16px;
+        align-items: start;
+      }
+      .year-select-wrap {
+        grid-column: 1 / -1;
+      }
+      .year-hint {
+        grid-column: 1 / -1;
+      }
       #departments {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
       .employee-row {
-        display: flex;
+        grid-template-columns: 80px 1.5fr 1fr 1fr 1fr;
+        grid-template-areas:
+          'rank info slider percent-label hourly-label'
+          'rank info slider percent-input hourly-input'
+          'rank info slider percent-input hourly-input';
+        align-items: center;
+      }
+      .employee-header {
+        display: grid;
+        grid-template-columns: 80px 1.5fr 1fr 1fr 1fr;
         align-items: center;
         gap: 8px;
-        padding: 10px;
       }
-      .employee-row.shaded {
-        background-color: var(--shade);
+      .employee-row .rank-cell {
+        align-self: stretch;
       }
-      .employee-info {
-        flex: 2 1 0;
+      .rank-controls {
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
       }
-      .emp-slider {
-        flex: 3 2 0;
-      }
-      .emp-new-rate {
-        margin: 0 4px 0 4px;
+      .rank-controls button {
+        width: 36px;
+        height: 36px;
       }
       .label-text {
         margin-left: 4px;
@@ -501,6 +620,18 @@
       <span id="saveMsg">Saved!</span>
     </div>
     <h1 class="title">Dublin Cleaner’s Raise Allocation</h1>
+    <div class="year-controls">
+      <div class="year-select-wrap">
+        <label for="yearSelect">Viewing year</label>
+        <select id="yearSelect"></select>
+      </div>
+      <div class="year-buttons">
+        <button id="archiveBtn" onclick="archiveYear()">📸 Archive Current Year</button>
+        <button id="newYearBtn" onclick="promptNewYear()">🗓️ Start New Year</button>
+      </div>
+      <p class="year-hint">Selecting a past year loads a read-only snapshot for reference.</p>
+    </div>
+    <div id="yearNotice" class="year-notice"></div>
     <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2024/12/Dublin-Logos-stacked.png" alt="Dublin Cleaners Logo">
   </div>
 
@@ -511,8 +642,8 @@
 
   <!-- Bottom controls -->
   <div id="controls">
-    <button class="edit-btn" onclick="editData()">✏️ Edit Data</button>
-    <button class="reset-btn" onclick="resetAllocations()">🔄 Reset Allocations</button>
+    <button id="editBtn" class="edit-btn" onclick="editData()">✏️ Edit Data</button>
+    <button id="resetBtn" class="reset-btn" onclick="resetAllocations()">🔄 Reset Allocations</button>
   </div>
 
   <!-- Edit Data modal -->
@@ -540,6 +671,12 @@
     let loadStartTime = 0;
     let progressIntervalId;
     let saveMsgTimeout;
+    let yearContext = {
+      currentYear: '',
+      archivedYears: [],
+      selectedYear: '',
+      isHistorical: false
+    };
 
     function debounce(fn, delay) {
       let id;
@@ -547,6 +684,75 @@
         clearTimeout(id);
         id = setTimeout(() => fn(...args), delay);
       };
+    }
+
+    function initApp() {
+      const yearSelect = document.getElementById('yearSelect');
+      yearSelect.addEventListener('change', handleYearChange);
+      google.script.run
+        .withSuccessHandler(meta => {
+          updateYearContext(meta);
+          loadData();
+        })
+        .withFailureHandler(err => alert(err.message))
+        .getYearMetadata();
+    }
+
+    function updateYearContext(meta, desiredYear) {
+      yearContext.currentYear = meta.currentYear;
+      yearContext.archivedYears = meta.archivedYears || [];
+      const uniqueYears = Array.from(new Set([...yearContext.archivedYears, yearContext.currentYear]));
+      uniqueYears.sort((a, b) => Number(b) - Number(a));
+      let targetYear = desiredYear || yearContext.selectedYear || meta.defaultYear || yearContext.currentYear;
+      if (!uniqueYears.includes(targetYear)) {
+        targetYear = yearContext.currentYear;
+      }
+      yearContext.selectedYear = targetYear;
+      yearContext.isHistorical = yearContext.selectedYear !== yearContext.currentYear;
+      renderYearOptions(uniqueYears);
+      updateYearNotice();
+    }
+
+    function renderYearOptions(years) {
+      const select = document.getElementById('yearSelect');
+      select.innerHTML = '';
+      years.forEach(year => {
+        const opt = document.createElement('option');
+        opt.value = year;
+        opt.textContent = year;
+        select.appendChild(opt);
+      });
+      select.value = yearContext.selectedYear;
+    }
+
+    function updateYearNotice() {
+      const notice = document.getElementById('yearNotice');
+      const archiveBtn = document.getElementById('archiveBtn');
+      const newYearBtn = document.getElementById('newYearBtn');
+      const saveBtn = document.getElementById('saveBtn');
+      const editBtn = document.getElementById('editBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      if (yearContext.isHistorical) {
+        notice.textContent = `Viewing archived ${yearContext.selectedYear} data (read-only).`;
+        notice.classList.add('historical');
+        notice.classList.remove('active');
+      } else {
+        notice.textContent = `Active planning year: ${yearContext.currentYear}.`;
+        notice.classList.add('active');
+        notice.classList.remove('historical');
+      }
+      if (archiveBtn) archiveBtn.disabled = yearContext.isHistorical;
+      if (newYearBtn) newYearBtn.disabled = yearContext.isHistorical;
+      if (saveBtn) saveBtn.disabled = yearContext.isHistorical;
+      if (editBtn) editBtn.disabled = yearContext.isHistorical;
+      if (resetBtn) resetBtn.disabled = yearContext.isHistorical;
+    }
+
+    function handleYearChange(event) {
+      yearContext.selectedYear = event.target.value;
+      yearContext.isHistorical = yearContext.selectedYear !== yearContext.currentYear;
+      updateYearNotice();
+      loadData();
     }
 
     function startLoadingBar() {
@@ -582,12 +788,58 @@
           renderDepartments();
           finishLoadingBar(done);
         })
-        .getDashboardData();
+        .withFailureHandler(err => {
+          finishLoadingBar(() => {
+            alert(err.message);
+            if (done) done();
+          });
+        })
+        .getDashboardData(yearContext.selectedYear);
+    }
+
+    function archiveYear() {
+      if (yearContext.isHistorical) {
+        alert('Switch to the active year before archiving.');
+        return;
+      }
+      if (!confirm(`Create a snapshot of ${yearContext.currentYear}?`)) return;
+      startLoadingBar();
+      google.script.run
+        .withSuccessHandler(meta => {
+          finishLoadingBar(() => {
+            updateYearContext(meta, yearContext.selectedYear);
+            alert(`${yearContext.currentYear} snapshot saved for historical review.`);
+          });
+        })
+        .withFailureHandler(err => finishLoadingBar(() => alert(err.message)))
+        .archiveCurrentYear();
+    }
+
+    function promptNewYear() {
+      if (yearContext.isHistorical) {
+        alert('Switch to the active year before starting a new cycle.');
+        return;
+      }
+      const suggestion = String(Number(yearContext.currentYear) + 1);
+      const entry = prompt('Enter the new planning year (e.g. 2026):', suggestion);
+      if (!entry) return;
+      startLoadingBar();
+      google.script.run
+        .withSuccessHandler(meta => {
+          finishLoadingBar(() => {
+            updateYearContext(meta, meta.currentYear);
+            loadData();
+            alert(`Planning year updated to ${meta.currentYear}. Previous data archived automatically.`);
+          });
+        })
+        .withFailureHandler(err => finishLoadingBar(() => alert(err.message)))
+        .startNewYear(entry);
     }
 
     function renderDepartments() {
       const ctr = document.getElementById('departments');
       ctr.innerHTML = '';
+      const editingEnabled = !yearContext.isHistorical;
 
       currentDepts.forEach(dept => {
         const box = document.createElement('div');
@@ -611,14 +863,11 @@
         ds.min = 0; ds.max = 15; ds.step = 1;
         ds.value = dept.pct;
         ds.className = 'slider';
+        ds.disabled = !editingEnabled;
         infoBox.appendChild(ds);
 
         const labels = document.createElement('div');
         labels.className = 'labels';
-        labels.innerHTML = `
-          <span><b>Raise %:</b> ${dept.pct}%</span>
-          <span><b>Budget:</b> $${(dept.wages * (dept.pct / 100)).toLocaleString()}</span>
-        `;
         infoBox.appendChild(labels);
 
         const rem = document.createElement('div');
@@ -641,11 +890,17 @@
         `;
         listBox.appendChild(headerRow);
 
-        // Filter employees for this department then sort
         const emps = currentEmps
           .filter(e => e.dept === dept.name)
           .sort((a, b) => a.rank - b.rank);
         const empCount = emps.length;
+
+        const updateLabels = () => {
+          labels.innerHTML = `
+            <span><b>Raise %:</b> ${ds.value}%</span>
+            <span><b>Budget:</b> $${(dept.wages * (ds.value / 100)).toLocaleString()}</span>
+          `;
+        };
 
         emps.forEach((emp, idx) => {
           const row = document.createElement('div');
@@ -654,7 +909,6 @@
             row.classList.add('shaded');
           }
 
-          // Rank controls: up button, input, down button
           const rankBox = document.createElement('div');
           rankBox.className = 'rank-controls';
 
@@ -668,25 +922,28 @@
           rankInput.min = 1;
           rankInput.max = empCount;
           rankInput.value = emp.rank;
+          rankInput.disabled = !editingEnabled;
           rankBox.appendChild(rankInput);
 
           const downBtn = document.createElement('button');
           downBtn.textContent = '▼';
           rankBox.appendChild(downBtn);
 
+          if (!editingEnabled) {
+            upBtn.disabled = true;
+            downBtn.disabled = true;
+          }
+
           row.appendChild(rankBox);
 
-          // Employee info block
           const info = document.createElement('div');
           info.className = 'employee-info';
 
-          // Line 1: Name
           const nameDiv = document.createElement('div');
           nameDiv.className = 'emp-name';
           nameDiv.textContent = emp.name;
           info.appendChild(nameDiv);
 
-          // Line 2: Current pay rate & annual salary
           const annual = emp.rate * emp.hours;
           const payDiv = document.createElement('div');
           payDiv.className = 'emp-pay';
@@ -695,32 +952,29 @@
 
           row.appendChild(info);
 
-          // Employee slider (max 40%)
           const es = document.createElement('input');
           es.type = 'range';
-          es.min = 0; 
-          es.max = 40;  // slider max 40%
+          es.min = 0;
+          es.max = 40;
           es.step = 0.01;
           const savedHr = Number(emp.hourlyIncrease || 0);
           const useHr = savedHr !== 0 && emp.rate > 0;
           const pctFromHr = useHr ? (savedHr / emp.rate) * 100 : Number(emp.allocation);
           es.value = pctFromHr;
           es.className = 'emp-slider';
+          es.disabled = !editingEnabled;
           row.appendChild(es);
 
-          // New rate amount (green) directly after slider
           const newRateDiv = document.createElement('div');
           newRateDiv.className = 'emp-new-rate';
-          newRateDiv.textContent = ''; // will be set below
+          newRateDiv.textContent = '';
           row.appendChild(newRateDiv);
 
-          // “%:” label
           const percentLabel = document.createElement('span');
           percentLabel.className = 'label-text label-percent';
           percentLabel.textContent = '%:';
           row.appendChild(percentLabel);
 
-          // Percent input (max 40)
           const percentInput = document.createElement('input');
           percentInput.type = 'number';
           percentInput.className = 'emp-percent percent-input';
@@ -729,15 +983,14 @@
           percentInput.max = '40';
           percentInput.value = pctFromHr.toFixed(2);
           percentInput.title = 'Enter exact %';
+          percentInput.disabled = !editingEnabled;
           row.appendChild(percentInput);
 
-          // “$/hr:” label
           const hourlyLabel = document.createElement('span');
           hourlyLabel.className = 'label-text label-hourly';
           hourlyLabel.textContent = '$/hr:';
           row.appendChild(hourlyLabel);
 
-          // Hourly-increase input
           const hourlyInput = document.createElement('input');
           hourlyInput.type = 'number';
           hourlyInput.className = 'emp-hourly hourly-input';
@@ -745,113 +998,109 @@
           hourlyInput.min = '0';
           hourlyInput.value = '0.00';
           hourlyInput.title = 'Enter exact $/hr increase';
+          hourlyInput.disabled = !editingEnabled;
           row.appendChild(hourlyInput);
 
-          // Rank change handler
-          const changeRank = delta => {
-            let newRank = emp.rank + delta;
-            if (newRank < 1 || newRank > empCount) return;
-            const other = currentEmps.find(e => e.dept === dept.name && e.rank === newRank);
-            if (other && other.name !== emp.name) {
-              other.rank = emp.rank;
-              google.script.run.saveEmployeeRank(other.name, other.rank);
-            }
-            emp.rank = newRank;
-            rankInput.value = newRank;
-            google.script.run.saveEmployeeRank(emp.name, newRank);
-            renderDepartments();
-          };
-
-          const handleRankChange = () => {
-            let val = parseInt(rankInput.value) || 1;
-            if (val < 1) val = 1;
-            if (val > empCount) val = empCount;
-            if (val === emp.rank) {
-              rankInput.value = val;
-              return;
-            }
-            const delta = val - emp.rank;
-            changeRank(delta);
-          };
-          rankInput.onchange = handleRankChange;
-          rankInput.oninput = handleRankChange;
-          upBtn.onclick = () => changeRank(-1);
-          downBtn.onclick = () => changeRank(1);
-          upBtn.disabled = emp.rank === 1;
-          downBtn.disabled = emp.rank === empCount;
-
-          // Function to update the displayed dollar amount (no label text)
-          function updateNewRate() {
+          const updateNewRate = () => {
             const pct = parseFloat(percentInput.value) || 0;
             const newRate = emp.rate * (1 + pct / 100);
             newRateDiv.textContent = `$${newRate.toFixed(2)}/hr`;
-          }
-
-          // Slider oninput: recalc percentInput, hourlyInput, then update new rate & remaining
-          es.oninput = () => {
-            const pctEmp = Number(es.value);
-            percentInput.value = pctEmp.toFixed(2);
-            const hrInc = parseFloat((emp.rate * (pctEmp / 100)).toFixed(2));
-            hourlyInput.value = hrInc.toFixed(2);
-
-            emp.allocation = pctEmp;
-            emp.hourlyIncrease = hrInc;
-            updateNewRate();
-            updateRemaining();
-          };
-
-          // Slider onchange: persist allocation
-          es.onchange = () => {
-            emp.allocation = Number(es.value);
-            emp.hourlyIncrease = parseFloat(hourlyInput.value) || 0;
-            google.script.run.saveEmployeeAllocation(emp.name, emp.allocation);
-            google.script.run.saveEmployeeHourlyIncrease(emp.name, emp.hourlyIncrease);
           };
 
           const saveAlloc = pct => google.script.run.saveEmployeeAllocation(emp.name, pct);
-          const saveAllocDebounced = debounce(saveAlloc, 600);
+          const saveAllocDebounced = editingEnabled ? debounce(saveAlloc, 600) : () => {};
           const saveInc = amt => google.script.run.saveEmployeeHourlyIncrease(emp.name, amt);
-          const saveIncDebounced = debounce(saveInc, 600);
+          const saveIncDebounced = editingEnabled ? debounce(saveInc, 600) : () => {};
 
-          // Percent input oninput: recalc slider, hourlyInput, then update new rate & save
-          percentInput.oninput = () => {
-            let pctVal = parseFloat(percentInput.value) || 0;
-            if (pctVal < 0) pctVal = 0;
-            if (pctVal > 40) pctVal = 40;
-            percentInput.value = pctVal.toFixed(2);
-            es.value = pctVal;
+          if (editingEnabled) {
+            const changeRank = delta => {
+              let newRank = emp.rank + delta;
+              if (newRank < 1 || newRank > empCount) return;
+              const other = currentEmps.find(e => e.dept === dept.name && e.rank === newRank);
+              if (other && other.name !== emp.name) {
+                other.rank = emp.rank;
+                google.script.run.saveEmployeeRank(other.name, other.rank);
+              }
+              emp.rank = newRank;
+              rankInput.value = newRank;
+              google.script.run.saveEmployeeRank(emp.name, newRank);
+              renderDepartments();
+            };
 
-            const hrInc = parseFloat((emp.rate * (pctVal / 100)).toFixed(2));
-            hourlyInput.value = hrInc.toFixed(2);
+            const handleRankChange = () => {
+              let val = parseInt(rankInput.value) || 1;
+              if (val < 1) val = 1;
+              if (val > empCount) val = empCount;
+              if (val === emp.rank) {
+                rankInput.value = val;
+                return;
+              }
+              const delta = val - emp.rank;
+              changeRank(delta);
+            };
+            rankInput.onchange = handleRankChange;
+            rankInput.oninput = handleRankChange;
+            upBtn.onclick = () => changeRank(-1);
+            downBtn.onclick = () => changeRank(1);
+            upBtn.disabled = emp.rank === 1;
+            downBtn.disabled = emp.rank === empCount;
 
-            emp.allocation = pctVal;
-            emp.hourlyIncrease = hrInc;
-            updateNewRate();
-            updateRemaining();
-            saveAllocDebounced(pctVal);
-            saveIncDebounced(hrInc);
-          };
+            es.oninput = () => {
+              const pctEmp = Number(es.value);
+              percentInput.value = pctEmp.toFixed(2);
+              const hrInc = parseFloat((emp.rate * (pctEmp / 100)).toFixed(2));
+              hourlyInput.value = hrInc.toFixed(2);
 
-          // Hourly input oninput: recalc slider & percentInput, then update new rate & save
-          hourlyInput.oninput = () => {
-            let hrVal = parseFloat(hourlyInput.value) || 0;
-            if (hrVal < 0) hrVal = 0;
-            hrVal = parseFloat(hrVal.toFixed(2));
-            hourlyInput.value = hrVal.toFixed(2);
-            const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
-            const clampedPct = Math.min(40, pctVal);
-            es.value = clampedPct;
-            percentInput.value = clampedPct.toFixed(2);
+              emp.allocation = pctEmp;
+              emp.hourlyIncrease = hrInc;
+              updateNewRate();
+              updateRemaining();
+            };
 
-            emp.allocation = clampedPct;
-            emp.hourlyIncrease = hrVal;
-            updateNewRate();
-            updateRemaining();
-            saveAllocDebounced(clampedPct);
-            saveIncDebounced(hrVal);
-          };
+            es.onchange = () => {
+              emp.allocation = Number(es.value);
+              emp.hourlyIncrease = parseFloat(hourlyInput.value) || 0;
+              google.script.run.saveEmployeeAllocation(emp.name, emp.allocation);
+              google.script.run.saveEmployeeHourlyIncrease(emp.name, emp.hourlyIncrease);
+            };
 
-          // Initialize the hourlyInput & newRateDiv on first render
+            percentInput.oninput = () => {
+              let pctVal = parseFloat(percentInput.value) || 0;
+              if (pctVal < 0) pctVal = 0;
+              if (pctVal > 40) pctVal = 40;
+              percentInput.value = pctVal.toFixed(2);
+              es.value = pctVal;
+
+              const hrInc = parseFloat((emp.rate * (pctVal / 100)).toFixed(2));
+              hourlyInput.value = hrInc.toFixed(2);
+
+              emp.allocation = pctVal;
+              emp.hourlyIncrease = hrInc;
+              updateNewRate();
+              updateRemaining();
+              saveAllocDebounced(pctVal);
+              saveIncDebounced(hrInc);
+            };
+
+            hourlyInput.oninput = () => {
+              let hrVal = parseFloat(hourlyInput.value) || 0;
+              if (hrVal < 0) hrVal = 0;
+              hrVal = parseFloat(hrVal.toFixed(2));
+              hourlyInput.value = hrVal.toFixed(2);
+              const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
+              const clampedPct = Math.min(40, pctVal);
+              es.value = clampedPct;
+              percentInput.value = clampedPct.toFixed(2);
+
+              emp.allocation = clampedPct;
+              emp.hourlyIncrease = hrVal;
+              updateNewRate();
+              updateRemaining();
+              saveAllocDebounced(clampedPct);
+              saveIncDebounced(hrVal);
+            };
+          }
+
           const initialHrIncRaw = useHr ? savedHr : emp.rate * (Number(emp.allocation) / 100);
           const initialHrInc = parseFloat(initialHrIncRaw.toFixed(2));
           hourlyInput.value = initialHrInc.toFixed(2);
@@ -861,11 +1110,9 @@
           emp.allocation = pctFromHr;
           updateNewRate();
 
-          // Append this row to the listBox
           listBox.appendChild(row);
         });
 
-        // Function to update the “Remaining” line when allocations change
         function updateRemaining() {
           const budget = dept.wages * (ds.value / 100);
           let usedAnnualCost = 0;
@@ -884,21 +1131,19 @@
           rem.style.color = left < 0 ? 'red' : 'green';
         }
 
-        // Department slider oninput: update labels, recalc employees, update remaining
-        ds.oninput = () => {
-          labels.children[0].innerHTML = `<b>Raise %:</b> ${ds.value}%`;
-          labels.children[1].innerHTML = `<b>Budget:</b> $${(dept.wages * (ds.value / 100)).toLocaleString()}`;
-          listBox.querySelectorAll('.employee-row input[type="range"]').forEach(sl => sl.dispatchEvent(new Event('input')));
-          updateRemaining();
-        };
+        if (editingEnabled) {
+          ds.oninput = () => {
+            updateLabels();
+            listBox.querySelectorAll('.employee-row input[type="range"]').forEach(sl => sl.dispatchEvent(new Event('input')));
+            updateRemaining();
+          };
+          ds.onchange = () => {
+            google.script.run.saveDepartmentAllocation(dept.name, Number(ds.value));
+          };
+        }
 
-        // Department slider onchange: persist department allocation
-        ds.onchange = () => {
-          google.script.run.saveDepartmentAllocation(dept.name, Number(ds.value));
-        };
-
-        // Initialize “Remaining” when panel first renders
-        ds.dispatchEvent(new Event('input'));
+        updateLabels();
+        updateRemaining();
 
         box.appendChild(listBox);
         ctr.appendChild(box);
@@ -906,6 +1151,10 @@
     }
 
     function resetAllocations() {
+      if (yearContext.isHistorical) {
+        alert('Historical snapshots are read-only. Switch to the active year to reset allocations.');
+        return;
+      }
       if (!confirm("Are you sure you want to reset All Allocations?")) return;
       currentDepts.forEach(d => d.pct = 0);
       currentEmps.forEach(e => { e.allocation = 0; e.hourlyIncrease = 0; });
@@ -917,6 +1166,10 @@
     }
 
     function manualSave() {
+      if (yearContext.isHistorical) {
+        alert('Historical snapshots are read-only. Switch to the active year to save changes.');
+        return;
+      }
       currentDepts.forEach(d => {
         google.script.run.saveDepartmentAllocation(d.name, Number(d.pct));
       });
@@ -936,6 +1189,10 @@
     }
 
     function editData() {
+      if (yearContext.isHistorical) {
+        alert('Historical snapshots are read-only. Switch to the active year to edit data.');
+        return;
+      }
       // Show loading bar and animate
       startLoadingBar();
       google.script.run
@@ -1010,6 +1267,11 @@
     }
 
     function saveEdits() {
+      if (yearContext.isHistorical) {
+        alert('Historical snapshots are read-only. Switch to the active year to save changes.');
+        closeModal();
+        return;
+      }
       const depts = [], emps = [];
       document.querySelectorAll('#deptTable tr').forEach((row, i) => {
         if (i === 0) return;
@@ -1038,7 +1300,7 @@
       document.getElementById('editModal').style.display = 'none';
     }
 
-    window.onload = () => loadData();
+    window.onload = initApp;
   </script>
 </body>
 </html>

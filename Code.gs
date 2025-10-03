@@ -1,4 +1,37 @@
 const SPREADSHEET_ID = '1nE5fHAJ4QSVVu3UxOf2T0d6u5k7HfjIZCKGDGyv40S8';
+const YEAR_PROPERTY_KEY = 'CURRENT_YEAR';
+
+function ensureCurrentYear() {
+  const props = PropertiesService.getScriptProperties();
+  let currentYear = props.getProperty(YEAR_PROPERTY_KEY);
+  if (!currentYear) {
+    currentYear = String(new Date().getFullYear());
+    props.setProperty(YEAR_PROPERTY_KEY, currentYear);
+  }
+  return currentYear;
+}
+
+function getYearMetadata() {
+  const currentYear = ensureCurrentYear();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheetNames = ss.getSheets().map(s => s.getName());
+  const archivedYears = [];
+  sheetNames.forEach(name => {
+    const match = name.match(/^Employees_(\d{4})$/);
+    if (match) {
+      const yr = match[1];
+      if (sheetNames.indexOf(`Departments_${yr}`) >= 0 && archivedYears.indexOf(yr) < 0) {
+        archivedYears.push(yr);
+      }
+    }
+  });
+  archivedYears.sort();
+  return {
+    currentYear,
+    archivedYears,
+    defaultYear: currentYear
+  };
+}
 
 function doGet() {
   initializeData();
@@ -8,6 +41,7 @@ function doGet() {
 }
 
 function initializeData() {
+  ensureCurrentYear();
   const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
   // -- Departments sheet (unchanged) --
@@ -130,8 +164,10 @@ function initializeData() {
 }
 
 // Read departments
-function getDepartments() {
-  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Departments');
+function getDepartments(year) {
+  const name = year ? `Departments_${year}` : 'Departments';
+  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(name);
+  if (!sh) return [];
   const lastRow = sh.getLastRow();
   if (lastRow < 2) return [];
   const rows = sh.getRange(2, 1, lastRow - 1, 3).getValues();
@@ -139,8 +175,10 @@ function getDepartments() {
 }
 
 // Read employees + their saved allocation
-function getEmployees() {
-  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('Employees');
+function getEmployees(year) {
+  const name = year ? `Employees_${year}` : 'Employees';
+  const sh = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(name);
+  if (!sh) return [];
   const lastCol = sh.getLastColumn();
   const lastRow = sh.getLastRow();
   if (lastRow < 2) return [];
@@ -295,8 +333,13 @@ function saveEmployeeRank(empName, rank) {
 
 // Batch-save employee ranks then sort by department and rank
 // Entry point for UI
-function getDashboardData() {
-  return [ getDepartments(), getEmployees() ];
+function getDashboardData(year) {
+  const meta = getYearMetadata();
+  const requestedYear = year ? String(year) : meta.currentYear;
+  const useArchive = requestedYear !== meta.currentYear;
+  const departments = getDepartments(useArchive ? requestedYear : null);
+  const employees = getEmployees(useArchive ? requestedYear : null);
+  return [departments, employees];
 }
 
 // Reset all department and employee allocation percentages to zero
@@ -317,5 +360,65 @@ function resetAllAllocations() {
     if (inc >= 0 && es.getLastRow() > 1) {
       es.getRange(2, inc + 1, es.getLastRow() - 1, 1).setValue(0);
     }
+  }
+}
+
+function archiveCurrentYear() {
+  const meta = getYearMetadata();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const deptSheet = ss.getSheetByName('Departments');
+  const empSheet = ss.getSheetByName('Employees');
+  if (!deptSheet || !empSheet) {
+    throw new Error('Both Departments and Employees sheets are required before archiving.');
+  }
+  const deptArchiveName = `Departments_${meta.currentYear}`;
+  const empArchiveName = `Employees_${meta.currentYear}`;
+  copySheetContents(deptSheet, deptArchiveName, ss);
+  copySheetContents(empSheet, empArchiveName, ss);
+  return getYearMetadata();
+}
+
+function startNewYear(newYear) {
+  const meta = getYearMetadata();
+  const target = String(newYear || '').trim();
+  if (!/^\d{4}$/.test(target)) {
+    throw new Error('Enter the new planning year as a four-digit number (e.g. 2026).');
+  }
+  if (Number(target) <= Number(meta.currentYear)) {
+    throw new Error(`New year must be greater than the current planning year (${meta.currentYear}).`);
+  }
+  archiveCurrentYear();
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const deptSheet = ss.getSheetByName('Departments');
+  if (deptSheet && deptSheet.getLastRow() > 1) {
+    deptSheet.getRange(2, 3, deptSheet.getLastRow() - 1, 1).setValue(0);
+  }
+  const empSheet = ss.getSheetByName('Employees');
+  if (empSheet && empSheet.getLastRow() > 1) {
+    const hdr = empSheet.getRange(1, 1, 1, empSheet.getLastColumn()).getValues()[0];
+    const allocIdx = hdr.indexOf('AllocationPercent');
+    const incIdx = hdr.indexOf('HourlyIncrease');
+    if (allocIdx >= 0) {
+      empSheet.getRange(2, allocIdx + 1, empSheet.getLastRow() - 1, 1).setValue(0);
+    }
+    if (incIdx >= 0) {
+      empSheet.getRange(2, incIdx + 1, empSheet.getLastRow() - 1, 1).setValue(0);
+    }
+  }
+  PropertiesService.getScriptProperties().setProperty(YEAR_PROPERTY_KEY, target);
+  return getYearMetadata();
+}
+
+function copySheetContents(sourceSheet, targetName, ss) {
+  let target = ss.getSheetByName(targetName);
+  if (!target) {
+    target = ss.insertSheet(targetName);
+  }
+  target.clearContents();
+  const lastRow = sourceSheet.getLastRow();
+  const lastCol = sourceSheet.getLastColumn();
+  if (lastRow > 0 && lastCol > 0) {
+    const values = sourceSheet.getRange(1, 1, lastRow, lastCol).getValues();
+    target.getRange(1, 1, lastRow, lastCol).setValues(values);
   }
 }
