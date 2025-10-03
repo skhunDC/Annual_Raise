@@ -28,6 +28,17 @@ all current department and employee allocations, hourly increases, and ranks to
 the spreadsheet as a fallback to the automatic saves.
 Pressing the Save button now briefly displays a "Saved!" message as confirmation.
 
+Responsive Design Refresh
+-------------------------
+- Introduced a mobile-first layout with fluid spacing, ensuring the experience
+  feels native on phones, tablets, and desktops.
+- Converted department columns to a responsive grid (1 / 2 / 3 columns at key
+  breakpoints) and added elevated cards for clearer visual grouping.
+- Redesigned the header and action bar with modern surfaces, safe-area padding,
+  and touch-friendly buttons that adapt to available width.
+- Restyled employee rows to reflow into stacked sections on narrow screens
+  while preserving the original horizontal layout on large displays.
+
 See `AGENTS.md` for repository contribution guidelines.
 
 To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:

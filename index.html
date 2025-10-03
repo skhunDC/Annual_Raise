@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <base target="_top">
   <style>
     :root {
@@ -12,60 +14,81 @@
       --dept-bg: #e0e0e0;
       --text-color: #333;
       --input-height: 24px;
+      --radius-lg: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --max-width: 1100px;
     }
     * {
       box-sizing: border-box;
     }
     body {
       margin: 0;
-      padding: 20px;
-      background: var(--bg);
+      padding: 18px 16px 32px 16px;
+      background: linear-gradient(180deg, #f8fbff 0%, #f0f3f7 100%);
       font-family: Arial, sans-serif;
       color: var(--text-color);
-    }
-
-    /* ====== HEADER: TITLE + LOGO SIDE BY SIDE ====== */
-    #header {
+      min-height: 100vh;
       display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    /* ====== APP SHELL ====== */
+    #header {
+      background: var(--panel-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 18px 20px;
+      display: grid;
+      gap: 16px;
+      box-shadow: var(--shadow);
+      width: min(100%, var(--max-width));
+      margin: 0 auto;
+    }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      justify-content: center;   /* centers the title */
-      position: relative;        /* for absolute-positioned logo */
-      margin: 20px 0 20px 0;     /* breathing room above and below */
+      gap: 10px;
     }
     #header .title {
-      margin: 0 auto;
-      font-size: 2em;
-      font-weight: bold;
+      margin: 0;
+      font-size: clamp(1.6rem, 1.25rem + 1.2vw, 2.4rem);
+      font-weight: 700;
       color: var(--accent);
+      text-align: left;
     }
     #header #saveBtn {
-      position: absolute;
-      left: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.2em;
-      padding: 8px 20px;
+      flex: 1 1 160px;
+      font-size: 1rem;
+      padding: 10px 18px;
       border: none;
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
       background: var(--accent);
       color: #fff;
       cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 6px 16px rgba(0, 115, 230, 0.25);
+    }
+    #header #saveBtn:active {
+      transform: translateY(1px);
     }
     #header #saveMsg {
-      position: absolute;
-      left: 180px;
-      top: 50%;
-      transform: translateY(-50%);
       font-weight: bold;
       color: var(--accent);
       display: none;
     }
     #header #logo {
-      position: absolute;
-      right: 20px;
-      top: 50%;
-      transform: translateY(-50%);
-      max-height: 100px;
+      max-width: 180px;
+      height: auto;
+      justify-self: flex-start;
+    }
+
+    main {
+      flex: 1 1 auto;
+      width: 100%;
+      display: flex;
+      justify-content: center;
     }
 
     /* ---------------- LOADING BAR STYLES ---------------- */
@@ -87,27 +110,27 @@
     }
 
 
-    /* ------------ DEPARTMENT PANELS (3-column FLEX) ------------ */
+    /* ------------ DEPARTMENT PANELS ------------ */
     #departments {
-      display: flex;
-      gap: 20px;
-      width: 100%;
-      box-sizing: border-box;
-      padding-bottom: 100px; /* extra space so bottom buttons don’t overlap */
+      display: grid;
+      gap: 16px;
+      width: min(100%, var(--max-width));
+      margin: 0 auto 130px auto;
+      grid-template-columns: 1fr;
     }
     .department {
-      flex: 1 1 0;
       background: var(--panel-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
       min-width: 0;
+      box-shadow: var(--shadow);
     }
     .dept-info {
       background: var(--dept-bg);
       border-bottom: 3px solid var(--border);
-      padding: 15px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -137,21 +160,30 @@
 
     /* ------------ EMPLOYEE LIST WITH FLEX ITEMS ------------ */
     .employee-list {
-      padding: 15px;
+      padding: 16px;
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 10px;
       overflow-y: auto;
     }
     .employee-row {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        "rank info"
+        "slider slider"
+        "rate rate"
+        "percent-label percent-input"
+        "hourly-label hourly-input";
+      gap: 10px;
+      padding: 12px;
+      border-radius: var(--radius-sm);
       min-height: var(--input-height);
+      background: rgba(0, 0, 0, 0.02);
     }
     .employee-row.shaded {
-      background-color: var(--shade);
+      background-color: rgba(0, 115, 230, 0.08);
     }
     .employee-header {
       display: flex;
@@ -197,36 +229,36 @@
     .employee-info {
       display: flex;
       flex-direction: column;
-      flex: 2 1 0;
+      gap: 4px;
       min-width: 0;
       overflow: hidden;
+      grid-area: info;
     }
     .emp-name {
-      font-size: 0.9em;
+      font-size: 1em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 180px;
     }
     .emp-pay {
-      font-size: 0.8em;
+      font-size: 0.85em;
       color: #666;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 180px;
     }
     .emp-slider {
-      flex: 3 2 0;
+      width: 100%;
       min-width: 0;
       height: var(--input-height);
+      grid-area: slider;
     }
     .label-text {
-      flex: 0 0 auto;
       font-size: 0.88em;
       white-space: nowrap;
-      margin-left: 4px;
-      margin-right: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
     /* Input boxes: width = 8ch */
     .emp-percent {
@@ -235,7 +267,6 @@
       font-size: 0.88em;
       height: var(--input-height);
       text-align: right;
-      flex: 0 0 auto;
       margin-right: 4px;
     }
     .emp-hourly {
@@ -244,7 +275,6 @@
       font-size: 0.88em;
       height: var(--input-height);
       text-align: right;
-      flex: 0 0 auto;
       margin-right: 4px;
     }
     .emp-rank {
@@ -266,8 +296,8 @@
       flex-direction: column;
       align-items: center;
       width: 5ch;
-      flex: 0 0 auto;
       margin-right: 4px;
+      grid-area: rank;
     }
     .rank-controls button {
       border: none;
@@ -282,10 +312,23 @@
     }
     /* New Rate amount styling */
     .emp-new-rate {
-      color: green;
-      font-size: 0.8em;
-      margin: 0 4px 0 4px;
+      color: #0a7d1d;
+      font-size: 0.85em;
+      margin: 0;
       white-space: nowrap;
+      grid-area: rate;
+    }
+    .label-percent {
+      grid-area: percent-label;
+    }
+    .percent-input {
+      grid-area: percent-input;
+    }
+    .label-hourly {
+      grid-area: hourly-label;
+    }
+    .hourly-input {
+      grid-area: hourly-input;
     }
 
     /* ---------------- EDIT DATA MODAL STYLES ---------------- */
@@ -339,19 +382,30 @@
 
     /* ------------------- BOTTOM CONTROLS -------------------- */
     #controls {
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      width: 100%;
-      text-align: center;
+      position: sticky;
+      bottom: 0;
+      width: min(100%, var(--max-width));
+      margin: 24px auto 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+      box-shadow: var(--shadow);
     }
     #controls button {
-      font-size: 1.2em;
-      padding: 12px 32px;
-      margin: 0 10px;
+      font-size: 1rem;
+      padding: 12px 24px;
       border: none;
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      flex: 1 1 180px;
+      max-width: 220px;
     }
     .edit-btn {
       background: var(--accent);
@@ -360,6 +414,75 @@
     .reset-btn {
       background: #555;
       color: #fff;
+    }
+    #controls button:active {
+      transform: translateY(1px);
+    }
+
+    @media (min-width: 600px) {
+      body {
+        padding: 26px 40px 40px 40px;
+      }
+      #departments {
+        gap: 20px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .employee-row {
+        padding: 14px 16px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      #header {
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+      }
+      .header-actions {
+        order: 1;
+      }
+      #header .title {
+        order: 2;
+        text-align: center;
+      }
+      #header #logo {
+        order: 3;
+        justify-self: end;
+        max-width: 200px;
+      }
+      #header #saveMsg {
+        order: 4;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      #departments {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .employee-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+      }
+      .employee-row.shaded {
+        background-color: var(--shade);
+      }
+      .employee-info {
+        flex: 2 1 0;
+      }
+      .emp-slider {
+        flex: 3 2 0;
+      }
+      .emp-new-rate {
+        margin: 0 4px 0 4px;
+      }
+      .label-text {
+        margin-left: 4px;
+        margin-right: 2px;
+      }
+      .rank-controls {
+        margin-right: 4px;
+      }
     }
   </style>
 </head>
@@ -373,14 +496,18 @@
 
   <!-- HEADER: title centered + logo on right (with breathing room) -->
   <div id="header">
-    <button id="saveBtn" onclick="manualSave()">💾 Save</button>
-    <span id="saveMsg">Saved!</span>
+    <div class="header-actions">
+      <button id="saveBtn" onclick="manualSave()">💾 Save</button>
+      <span id="saveMsg">Saved!</span>
+    </div>
     <h1 class="title">Dublin Cleaner’s Raise Allocation</h1>
     <img id="logo" src="https://www.dublincleaners.com/wp-content/uploads/2024/12/Dublin-Logos-stacked.png" alt="Dublin Cleaners Logo">
   </div>
 
   <!-- Department panels -->
-  <div id="departments"></div>
+  <main>
+    <div id="departments"></div>
+  </main>
 
   <!-- Bottom controls -->
   <div id="controls">
@@ -589,14 +716,14 @@
 
           // “%:” label
           const percentLabel = document.createElement('span');
-          percentLabel.className = 'label-text';
+          percentLabel.className = 'label-text label-percent';
           percentLabel.textContent = '%:';
           row.appendChild(percentLabel);
 
           // Percent input (max 40)
           const percentInput = document.createElement('input');
           percentInput.type = 'number';
-          percentInput.className = 'emp-percent';
+          percentInput.className = 'emp-percent percent-input';
           percentInput.step = '0.01';
           percentInput.min = '0';
           percentInput.max = '40';
@@ -606,14 +733,14 @@
 
           // “$/hr:” label
           const hourlyLabel = document.createElement('span');
-          hourlyLabel.className = 'label-text';
+          hourlyLabel.className = 'label-text label-hourly';
           hourlyLabel.textContent = '$/hr:';
           row.appendChild(hourlyLabel);
 
           // Hourly-increase input
           const hourlyInput = document.createElement('input');
           hourlyInput.type = 'number';
-          hourlyInput.className = 'emp-hourly';
+          hourlyInput.className = 'emp-hourly hourly-input';
           hourlyInput.step = '0.01';
           hourlyInput.min = '0';
           hourlyInput.value = '0.00';
