@@ -15,11 +15,11 @@ arrows moves the selected employee higher or lower in the list one spot at a
 time until the top or bottom is reached. Manual number entry is still
 supported, and each change is saved back to the spreadsheet immediately.
 
-Employee cards can also be reordered directly with drag and drop. Grab the
-handle above the rank arrows to move an employee to a new position. As you
-drop, the list re-numbers automatically, alternating row shading updates to
-match, and new ranks are saved instantly. Dragging is available whenever the
-active planning year is in edit mode.
+Employee cards can also be reordered directly with drag and drop. You can grab
+anywhere on the card (outside of editable fields) to move an employee to a new
+position. As you drop, the list re-numbers automatically, alternating row
+shading updates to match, and new ranks are saved instantly. Dragging is
+available whenever the active planning year is in edit mode.
 
 Employee raise amounts entered in the % Up or $/hr Up fields are now
 automatically saved a moment after typing stops so data persists even if the
@@ -98,3 +98,5 @@ Bug Fixes
 - Adjusted position of the "Saved!" message so it no longer overlaps the Save button.
 - Smoothed typing in the % and $/hr inputs so values are only formatted after entry is complete.
 - Cleared the % and $/hr inputs by default so new rows start blank instead of showing 0.00.
+- Fixed drag and drop so the entire employee card is draggable and focusable,
+  eliminating cases where dragging silently failed on some browsers.

@@ -264,6 +264,7 @@
       min-height: var(--input-height);
       background: rgba(0, 0, 0, 0.02);
       align-items: center;
+      cursor: grab;
     }
     .employee-row.shaded {
       background-color: rgba(0, 115, 230, 0.08);
@@ -427,6 +428,12 @@
     }
     .employee-row.is-dragging {
       opacity: 0.65;
+      cursor: grabbing;
+    }
+    .employee-row.is-focused,
+    .employee-row:focus-visible {
+      outline: 2px solid rgba(0, 115, 230, 0.35);
+      outline-offset: 2px;
     }
     .employee-list.is-dragging-over {
       outline: 2px dashed var(--accent);
@@ -718,6 +725,17 @@
       deptName: ''
     };
 
+    function isDragBlockedElement(element) {
+      if (!element) {
+        return false;
+      }
+      if (element.closest('.drag-handle')) {
+        return false;
+      }
+      const blockedSelectors = ['input', 'textarea', 'select', 'button', '[contenteditable="true"]'];
+      return blockedSelectors.some(selector => element.closest(selector));
+    }
+
     function getDragAfterElement(container, y) {
       const rows = [...container.querySelectorAll('.employee-row:not(.is-dragging)')];
       return rows.reduce((closest, child) => {
@@ -756,6 +774,8 @@
       });
       if (dragState.row) {
         dragState.row.classList.remove('is-dragging');
+        dragState.row.classList.remove('is-focused');
+        dragState.row.setAttribute('aria-grabbed', 'false');
       }
       dragState.row = null;
       dragState.deptName = '';
@@ -1064,14 +1084,31 @@
           row.dataset.empName = emp.name;
           if (editingEnabled) {
             row.draggable = true;
+            row.tabIndex = 0;
+            row.setAttribute('role', 'option');
+            row.setAttribute('aria-grabbed', 'false');
+            row.addEventListener('focusin', () => {
+              row.classList.add('is-focused');
+            });
+            row.addEventListener('focusout', event => {
+              if (!row.contains(event.relatedTarget)) {
+                row.classList.remove('is-focused');
+              }
+            });
+            row.addEventListener('mousedown', event => {
+              if (!isDragBlockedElement(event.target)) {
+                row.focus();
+              }
+            });
             row.addEventListener('dragstart', event => {
-              if (!event.target.closest('.drag-handle')) {
+              if (isDragBlockedElement(event.target)) {
                 event.preventDefault();
                 return;
               }
               dragState.row = row;
               dragState.deptName = dept.name;
               row.classList.add('is-dragging');
+              row.setAttribute('aria-grabbed', 'true');
               if (event.dataTransfer) {
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', emp.name);
@@ -1083,6 +1120,8 @@
                 dragState.deptName = '';
               }
               row.classList.remove('is-dragging');
+              row.classList.remove('is-focused');
+              row.setAttribute('aria-grabbed', 'false');
               listBox.classList.remove('is-dragging-over');
             });
           }
