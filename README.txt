@@ -19,6 +19,9 @@ Employee raise amounts entered in the % Up or $/hr Up fields are now
 automatically saved a moment after typing stops so data persists even if the
 page is refreshed.
 
+The % Up and $/hr Up fields now sit beside each employee's name so the cards
+take up less vertical space without hiding any controls on mobile.
+
 The "Reset Allocations" button now clears all saved allocation percentages on
 the server so slider values no longer revert when ranks are adjusted or panels
 are re-rendered.

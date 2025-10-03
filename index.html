@@ -252,24 +252,24 @@
     }
     .employee-row {
       display: grid;
-      grid-template-columns: auto 1fr;
+      grid-template-columns: auto 1fr minmax(0, auto);
       grid-template-areas:
-        "rank info"
-        "slider slider"
-        "rate rate"
-        "percent-label percent-input"
-        "hourly-label hourly-input";
+        "rank info adjustments"
+        "slider slider slider"
+        "rate rate rate";
       gap: 10px;
       padding: 12px;
       border-radius: var(--radius-sm);
       min-height: var(--input-height);
       background: rgba(0, 0, 0, 0.02);
+      align-items: center;
     }
     .employee-row.shaded {
       background-color: rgba(0, 115, 230, 0.08);
     }
     .employee-header {
-      display: flex;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
       align-items: center;
       gap: 6px;
       font-weight: bold;
@@ -295,19 +295,10 @@
       text-align: center;
       white-space: nowrap;
     }
-    .percent-header {
-      width: 8ch;
-      text-align: center;
-      flex: 0 0 auto;
-      margin-right: 4px;
+    .adjustments-header {
+      text-align: right;
       white-space: nowrap;
-    }
-    .hourly-header {
-      width: 8ch;
-      text-align: center;
-      flex: 0 0 auto;
-      margin-right: 4px;
-      white-space: nowrap;
+      margin-left: 4px;
     }
     .employee-info {
       display: flex;
@@ -336,29 +327,36 @@
       height: var(--input-height);
       grid-area: slider;
     }
-    .label-text {
-      font-size: 0.88em;
-      white-space: nowrap;
+    .employee-adjustments {
+      grid-area: adjustments;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .adjustment-field {
       display: flex;
       align-items: center;
       gap: 4px;
+      font-size: 0.88em;
+      white-space: nowrap;
     }
-    /* Input boxes: width = 8ch */
+    .adjustment-label {
+      color: #444;
+    }
     .emp-percent {
-      width: 8ch;
-      padding: 2px 2px;
+      width: 7ch;
+      padding: 2px;
       font-size: 0.88em;
       height: var(--input-height);
       text-align: right;
-      margin-right: 4px;
     }
     .emp-hourly {
-      width: 8ch;
-      padding: 2px 2px;
+      width: 7ch;
+      padding: 2px;
       font-size: 0.88em;
       height: var(--input-height);
       text-align: right;
-      margin-right: 4px;
     }
     .emp-rank {
       width: 5ch;
@@ -401,19 +399,6 @@
       white-space: nowrap;
       grid-area: rate;
     }
-    .label-percent {
-      grid-area: percent-label;
-    }
-    .percent-input {
-      grid-area: percent-input;
-    }
-    .label-hourly {
-      grid-area: hourly-label;
-    }
-    .hourly-input {
-      grid-area: hourly-input;
-    }
-
     /* ---------------- EDIT DATA MODAL STYLES ---------------- */
     #editModal {
       display: none;
@@ -513,6 +498,11 @@
       .employee-row {
         padding: 14px 16px;
       }
+      .employee-adjustments {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+      }
     }
 
     @media (min-width: 768px) {
@@ -585,10 +575,6 @@
       .rank-controls button {
         width: 36px;
         height: 36px;
-      }
-      .label-text {
-        margin-left: 4px;
-        margin-right: 2px;
       }
     }
 
@@ -881,6 +867,7 @@
         headerRow.innerHTML = `
           <div class="rank-header">Rank</div>
           <div class="info-header">Emp &amp; Pay</div>
+          <div class="adjustments-header">% &amp; $/hr</div>
         `;
         listBox.appendChild(headerRow);
 
@@ -946,6 +933,10 @@
 
           row.appendChild(info);
 
+          const adjustments = document.createElement('div');
+          adjustments.className = 'employee-adjustments';
+          row.appendChild(adjustments);
+
           const es = document.createElement('input');
           es.type = 'range';
           es.min = 0;
@@ -964,36 +955,40 @@
           newRateDiv.textContent = '';
           row.appendChild(newRateDiv);
 
-          const percentLabel = document.createElement('span');
-          percentLabel.className = 'label-text label-percent';
-          percentLabel.textContent = '%:';
-          row.appendChild(percentLabel);
-
           const percentInput = document.createElement('input');
           percentInput.type = 'number';
-          percentInput.className = 'emp-percent percent-input';
+          percentInput.className = 'emp-percent';
           percentInput.step = '0.01';
           percentInput.min = '0';
           percentInput.max = '40';
           percentInput.value = pctFromHr.toFixed(2);
           percentInput.title = 'Enter exact %';
           percentInput.disabled = !editingEnabled;
-          row.appendChild(percentInput);
-
-          const hourlyLabel = document.createElement('span');
-          hourlyLabel.className = 'label-text label-hourly';
-          hourlyLabel.textContent = '$/hr:';
-          row.appendChild(hourlyLabel);
+          const percentField = document.createElement('label');
+          percentField.className = 'adjustment-field';
+          const percentText = document.createElement('span');
+          percentText.className = 'adjustment-label';
+          percentText.textContent = '%';
+          percentField.appendChild(percentText);
+          percentField.appendChild(percentInput);
+          adjustments.appendChild(percentField);
 
           const hourlyInput = document.createElement('input');
           hourlyInput.type = 'number';
-          hourlyInput.className = 'emp-hourly hourly-input';
+          hourlyInput.className = 'emp-hourly';
           hourlyInput.step = '0.01';
           hourlyInput.min = '0';
           hourlyInput.value = '0.00';
           hourlyInput.title = 'Enter exact $/hr increase';
           hourlyInput.disabled = !editingEnabled;
-          row.appendChild(hourlyInput);
+          const hourlyField = document.createElement('label');
+          hourlyField.className = 'adjustment-field';
+          const hourlyText = document.createElement('span');
+          hourlyText.className = 'adjustment-label';
+          hourlyText.textContent = '$/hr';
+          hourlyField.appendChild(hourlyText);
+          hourlyField.appendChild(hourlyInput);
+          adjustments.appendChild(hourlyField);
 
           const updateNewRate = () => {
             const pct = parseFloat(percentInput.value) || 0;
