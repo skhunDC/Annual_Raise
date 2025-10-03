@@ -1064,6 +1064,14 @@
 
           row.appendChild(rankBox);
           row.dataset.empName = emp.name;
+
+          const es = document.createElement('input');
+          es.type = 'range';
+          es.min = 0;
+          es.max = 40;
+          es.step = 0.01;
+          es.className = 'emp-slider';
+          es.disabled = !editingEnabled;
           if (editingEnabled) {
             row.draggable = true;
             row.tabIndex = 0;
@@ -1168,11 +1176,6 @@
           adjustments.className = 'employee-adjustments';
           row.appendChild(adjustments);
 
-          const es = document.createElement('input');
-          es.type = 'range';
-          es.min = 0;
-          es.max = 40;
-          es.step = 0.01;
           const savedHr = Number(emp.hourlyIncrease || 0);
           const useHr = savedHr !== 0 && emp.rate > 0;
           const pctFromHr = useHr ? (savedHr / emp.rate) * 100 : Number(emp.allocation);
@@ -1182,8 +1185,6 @@
           const formatHourlyDisplay = value =>
             Number.isFinite(value) && value !== 0 ? value.toFixed(2) : '';
           es.value = pctFromHr;
-          es.className = 'emp-slider';
-          es.disabled = !editingEnabled;
           row.appendChild(es);
 
           const newRateDiv = document.createElement('div');
