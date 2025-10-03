@@ -249,6 +249,7 @@
       flex-direction: column;
       gap: 8px;
       overflow-y: auto;
+      position: relative;
     }
     .employee-row {
       display: grid;
@@ -376,20 +377,60 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      gap: 4px;
       width: 5ch;
+      min-width: 48px;
       margin-right: 4px;
       grid-area: rank;
     }
-    .rank-controls button {
+    .rank-arrow {
       border: none;
       background: none;
       cursor: pointer;
       padding: 0;
       line-height: 1;
     }
-    .rank-controls button:disabled {
+    .rank-arrow:disabled {
       opacity: 0.3;
       cursor: default;
+    }
+    .drag-handle {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: rgba(0, 0, 0, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      font-size: 1.1rem;
+      color: #5a5a5a;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .drag-handle span {
+      letter-spacing: 1px;
+    }
+    .drag-handle:focus-visible {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0, 115, 230, 0.2);
+    }
+    .drag-handle:active {
+      cursor: grabbing;
+      background: rgba(0, 0, 0, 0.12);
+    }
+    .drag-handle:disabled {
+      opacity: 0.35;
+      cursor: default;
+      background: rgba(0, 0, 0, 0.04);
+    }
+    .employee-row.is-dragging {
+      opacity: 0.65;
+    }
+    .employee-list.is-dragging-over {
+      outline: 2px dashed var(--accent);
+      outline-offset: 6px;
     }
     /* New Rate amount styling */
     .emp-new-rate {
@@ -575,7 +616,7 @@
       .employee-row .rank-cell {
         align-self: stretch;
       }
-      .rank-controls button {
+      .rank-controls .rank-arrow {
         width: 36px;
         height: 36px;
       }
@@ -670,6 +711,89 @@
         clearTimeout(id);
         id = setTimeout(() => fn(...args), delay);
       };
+    }
+
+    const dragState = {
+      row: null,
+      deptName: ''
+    };
+
+    function getDragAfterElement(container, y) {
+      const rows = [...container.querySelectorAll('.employee-row:not(.is-dragging)')];
+      return rows.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        }
+        return closest;
+      }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+    }
+
+    function finalizeDragOrder(listBox, deptName) {
+      const rows = [...listBox.querySelectorAll('.employee-row')];
+      rows.forEach((row, idx) => {
+        const name = row.dataset.empName;
+        const newRank = idx + 1;
+        const rankInput = row.querySelector('.emp-rank');
+        if (rankInput) {
+          rankInput.value = newRank;
+        }
+        const upBtn = row.querySelector('.rank-arrow--up');
+        if (upBtn) {
+          upBtn.disabled = newRank === 1;
+        }
+        const downBtn = row.querySelector('.rank-arrow--down');
+        if (downBtn) {
+          downBtn.disabled = newRank === rows.length;
+        }
+        row.classList.toggle('shaded', idx % 2 === 1);
+        const empObj = currentEmps.find(e => e.name === name && e.dept === deptName);
+        if (empObj && empObj.rank !== newRank) {
+          empObj.rank = newRank;
+          google.script.run.saveEmployeeRank(empObj.name, newRank);
+        }
+      });
+      if (dragState.row) {
+        dragState.row.classList.remove('is-dragging');
+      }
+      dragState.row = null;
+      dragState.deptName = '';
+      listBox.classList.remove('is-dragging-over');
+    }
+
+    function setupDepartmentDrag(listBox, deptName) {
+      listBox.addEventListener('dragover', event => {
+        if (!dragState.row || dragState.deptName !== deptName) {
+          return;
+        }
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        const afterElement = getDragAfterElement(listBox, event.clientY);
+        if (!afterElement) {
+          listBox.appendChild(dragState.row);
+        } else if (afterElement !== dragState.row) {
+          listBox.insertBefore(dragState.row, afterElement);
+        }
+        listBox.classList.add('is-dragging-over');
+      });
+      listBox.addEventListener('drop', event => {
+        if (!dragState.row || dragState.deptName !== deptName) {
+          return;
+        }
+        event.preventDefault();
+        listBox.classList.remove('is-dragging-over');
+        finalizeDragOrder(listBox, deptName);
+      });
+      listBox.addEventListener('dragleave', event => {
+        if (!dragState.row || dragState.deptName !== deptName) {
+          return;
+        }
+        if (event.relatedTarget && event.currentTarget.contains(event.relatedTarget)) {
+          return;
+        }
+        listBox.classList.remove('is-dragging-over');
+      });
     }
 
     function initApp() {
@@ -864,6 +988,9 @@
 
         const listBox = document.createElement('div');
         listBox.className = 'employee-list';
+        if (editingEnabled) {
+          setupDepartmentDrag(listBox, dept.name);
+        }
 
         const headerRow = document.createElement('div');
         headerRow.className = 'employee-header';
@@ -896,7 +1023,21 @@
           const rankBox = document.createElement('div');
           rankBox.className = 'rank-controls';
 
+          const dragHandle = document.createElement('button');
+          dragHandle.type = 'button';
+          dragHandle.className = 'drag-handle';
+          dragHandle.draggable = false;
+          dragHandle.innerHTML = '<span aria-hidden="true">⋮⋮</span>';
+          const dragLabel = editingEnabled ? 'Drag to reorder employee' : 'Reordering disabled in historical view';
+          dragHandle.title = dragLabel;
+          dragHandle.setAttribute('aria-label', dragLabel);
+          if (!editingEnabled) {
+            dragHandle.disabled = true;
+          }
+          rankBox.appendChild(dragHandle);
+
           const upBtn = document.createElement('button');
+          upBtn.className = 'rank-arrow rank-arrow--up';
           upBtn.textContent = '▲';
           rankBox.appendChild(upBtn);
 
@@ -910,6 +1051,7 @@
           rankBox.appendChild(rankInput);
 
           const downBtn = document.createElement('button');
+          downBtn.className = 'rank-arrow rank-arrow--down';
           downBtn.textContent = '▼';
           rankBox.appendChild(downBtn);
 
@@ -919,6 +1061,31 @@
           }
 
           row.appendChild(rankBox);
+          row.dataset.empName = emp.name;
+          if (editingEnabled) {
+            row.draggable = true;
+            row.addEventListener('dragstart', event => {
+              if (!event.target.closest('.drag-handle')) {
+                event.preventDefault();
+                return;
+              }
+              dragState.row = row;
+              dragState.deptName = dept.name;
+              row.classList.add('is-dragging');
+              if (event.dataTransfer) {
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', emp.name);
+              }
+            });
+            row.addEventListener('dragend', () => {
+              if (dragState.row === row) {
+                dragState.row = null;
+                dragState.deptName = '';
+              }
+              row.classList.remove('is-dragging');
+              listBox.classList.remove('is-dragging-over');
+            });
+          }
 
           const info = document.createElement('div');
           info.className = 'employee-info';
