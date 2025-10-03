@@ -79,6 +79,16 @@ Edit Data Workspace
 - Added accessible focus management so opening the editor traps scroll and
   returns focus to the launch button after closing.
 
+Edit Data Workspace
+-------------------
+- Replaced the legacy Edit Data view with a full-screen modal workspace that
+  keeps the rest of the dashboard visible but non-interactive while editing.
+- Grouped department and employee inputs into card-like sections with clearly
+  labeled headers, quick add buttons, and scrollable tables that preserve visibility on
+  smaller screens.
+- Added accessible focus management so opening the editor traps scroll and
+  returns focus to the launch button after closing.
+
 See `AGENTS.md` for repository contribution guidelines.
 
 To embed the deployed web app in your own `index.html`, ensure `doGet` allows iframe embedding:
