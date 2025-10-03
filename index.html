@@ -13,7 +13,7 @@
       --shade: #cccccc;
       --dept-bg: #e0e0e0;
       --text-color: #333;
-      --input-height: 24px;
+      --input-height: 20px;
       --radius-lg: 16px;
       --radius-sm: 10px;
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -243,25 +243,25 @@
 
     /* ------------ EMPLOYEE LIST WITH FLEX ITEMS ------------ */
     .employee-list {
-      padding: 14px;
+      padding: 10px;
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 4px;
       overflow-y: auto;
       position: relative;
     }
     .employee-row {
       display: grid;
-      grid-template-columns: auto 1fr minmax(0, auto);
+      grid-template-columns: auto minmax(0, 1fr) minmax(0, auto);
       grid-template-areas:
         "rank info adjustments"
-        "rate rate rate"
-        "slider slider slider";
-      gap: 8px;
-      padding: 9px 10px;
+        "rank slider adjustments";
+      column-gap: 8px;
+      row-gap: 4px;
+      padding: 6px 8px;
       border-radius: var(--radius-sm);
-      min-height: var(--input-height);
+      min-height: 0;
       background: rgba(0, 0, 0, 0.02);
       align-items: center;
       cursor: grab;
@@ -305,19 +305,19 @@
     .employee-info {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       min-width: 0;
       overflow: hidden;
       grid-area: info;
     }
     .emp-name {
-      font-size: 1em;
+      font-size: 0.95em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .emp-pay {
-      font-size: 0.85em;
+      font-size: 0.78em;
       color: #666;
       white-space: nowrap;
       overflow: hidden;
@@ -328,19 +328,22 @@
       min-width: 0;
       height: var(--input-height);
       grid-area: slider;
+      align-self: center;
     }
     .employee-adjustments {
       grid-area: adjustments;
       display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 5px;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
     }
     .adjustment-field {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: 0.88em;
+      gap: 3px;
+      font-size: 0.82em;
       white-space: nowrap;
     }
     .adjustment-label {
@@ -348,26 +351,25 @@
     }
     .emp-percent {
       width: 7ch;
-      padding: 2px;
-      font-size: 0.88em;
+      padding: 1px;
+      font-size: 0.82em;
       height: var(--input-height);
       text-align: right;
     }
     .emp-hourly {
       width: 7ch;
-      padding: 2px;
-      font-size: 0.88em;
+      padding: 1px;
+      font-size: 0.82em;
       height: var(--input-height);
       text-align: right;
     }
     .emp-rank {
       width: 5ch;
-      padding: 2px 2px;
-      font-size: 0.88em;
+      padding: 1px 2px;
+      font-size: 0.82em;
       height: var(--input-height);
-      text-align: right;
-      flex: 0 0 auto;
-      margin-right: 4px;
+      text-align: center;
+      margin: 0;
     }
     .emp-rank::-webkit-outer-spin-button,
     .emp-rank::-webkit-inner-spin-button {
@@ -375,14 +377,15 @@
       margin: 0;
     }
     .rank-controls {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-rows: repeat(3, minmax(18px, auto));
       align-items: center;
-      gap: 4px;
-      width: 5ch;
+      justify-items: center;
+      gap: 2px;
+      width: 48px;
       min-width: 48px;
-      margin-right: 4px;
       grid-area: rank;
+      align-self: stretch;
     }
     .rank-arrow {
       border: none;
@@ -390,41 +393,13 @@
       cursor: pointer;
       padding: 0;
       line-height: 1;
+      width: 28px;
+      height: 22px;
+      font-size: 0.75rem;
     }
     .rank-arrow:disabled {
       opacity: 0.3;
       cursor: default;
-    }
-    .drag-handle {
-      width: 44px;
-      height: 44px;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      background: rgba(0, 0, 0, 0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: grab;
-      font-size: 1.1rem;
-      color: #5a5a5a;
-      transition: background 0.2s ease, border-color 0.2s ease;
-    }
-    .drag-handle span {
-      letter-spacing: 1px;
-    }
-    .drag-handle:focus-visible {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(0, 115, 230, 0.2);
-    }
-    .drag-handle:active {
-      cursor: grabbing;
-      background: rgba(0, 0, 0, 0.12);
-    }
-    .drag-handle:disabled {
-      opacity: 0.35;
-      cursor: default;
-      background: rgba(0, 0, 0, 0.04);
     }
     .employee-row.is-dragging {
       opacity: 0.65;
@@ -442,13 +417,8 @@
     /* New Rate amount styling */
     .emp-new-rate {
       color: #0a7d1d;
-      font-size: 0.85em;
-      margin: 0;
+      font-size: 0.78em;
       white-space: nowrap;
-      grid-area: rate;
-      text-align: center;
-      justify-self: center;
-      align-self: center;
     }
     /* ---------------- EDIT DATA MODAL STYLES ---------------- */
     #editModal {
@@ -547,12 +517,12 @@
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       }
       .employee-row {
-        padding: 10px 12px;
+        padding: 8px 10px;
       }
       .employee-adjustments {
         flex-direction: row;
         align-items: center;
-        gap: 9px;
+        gap: 6px;
       }
     }
 
@@ -615,17 +585,13 @@
         grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       }
       .rank-controls {
-        grid-area: rank;
-        flex-direction: column;
-        align-items: center;
+        grid-template-rows: repeat(3, minmax(20px, auto));
         gap: 4px;
       }
-      .employee-row .rank-cell {
-        align-self: stretch;
-      }
       .rank-controls .rank-arrow {
-        width: 36px;
-        height: 36px;
+        width: 30px;
+        height: 24px;
+        font-size: 0.8rem;
       }
     }
 
@@ -727,9 +693,6 @@
 
     function isDragBlockedElement(element) {
       if (!element) {
-        return false;
-      }
-      if (element.closest('.drag-handle')) {
         return false;
       }
       const blockedSelectors = ['input', 'textarea', 'select', 'button', '[contenteditable="true"]'];
@@ -1043,19 +1006,6 @@
           const rankBox = document.createElement('div');
           rankBox.className = 'rank-controls';
 
-          const dragHandle = document.createElement('button');
-          dragHandle.type = 'button';
-          dragHandle.className = 'drag-handle';
-          dragHandle.draggable = false;
-          dragHandle.innerHTML = '<span aria-hidden="true">⋮⋮</span>';
-          const dragLabel = editingEnabled ? 'Drag to reorder employee' : 'Reordering disabled in historical view';
-          dragHandle.title = dragLabel;
-          dragHandle.setAttribute('aria-label', dragLabel);
-          if (!editingEnabled) {
-            dragHandle.disabled = true;
-          }
-          rankBox.appendChild(dragHandle);
-
           const upBtn = document.createElement('button');
           upBtn.className = 'rank-arrow rank-arrow--up';
           upBtn.textContent = '▲';
@@ -1167,7 +1117,7 @@
           const newRateDiv = document.createElement('div');
           newRateDiv.className = 'emp-new-rate';
           newRateDiv.textContent = '';
-          row.appendChild(newRateDiv);
+          info.appendChild(newRateDiv);
 
           const percentInput = document.createElement('input');
           percentInput.type = 'number';
