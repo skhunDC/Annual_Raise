@@ -28,6 +28,21 @@ all current department and employee allocations, hourly increases, and ranks to
 the spreadsheet as a fallback to the automatic saves.
 Pressing the Save button now briefly displays a "Saved!" message as confirmation.
 
+Annual Snapshot Workflow
+------------------------
+- A new year selector in the header lets you switch between the active planning
+  year and archived snapshots. Past years load in read-only mode so you can
+  review decisions without risking edits.
+- Use the **Archive Current Year** button to capture the present Departments and
+  Employees sheets into timestamped copies (e.g. `Departments_2025`). The
+  archive step is idempotent, so you can refresh a snapshot if late changes are
+  made before year-end.
+- The **Start New Year** button prompts for the upcoming year, automatically
+  archives the completed cycle, resets raise allocations/hourly adjustments to
+  zero, and updates the planning year stored with the spreadsheet.
+- Save, edit, and reset controls are automatically disabled while viewing an
+  archived year to keep historical data pristine.
+
 Responsive Design Refresh
 -------------------------
 - Introduced a mobile-first layout with fluid spacing, ensuring the experience
