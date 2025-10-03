@@ -33,6 +33,9 @@
       flex-direction: column;
       gap: 20px;
     }
+    body.modal-open {
+      overflow: hidden;
+    }
     /* ====== APP SHELL ====== */
     #header {
       background: var(--panel-bg);
@@ -422,51 +425,193 @@
     }
     /* ---------------- EDIT DATA MODAL STYLES ---------------- */
     #editModal {
-      display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: #fff;
-      padding: 20px;
-      overflow: auto;
+      inset: 0;
+      display: none;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 28px 16px;
+      background: rgba(17, 24, 39, 0.55);
       z-index: 9999;
-      box-sizing: border-box;
+      overflow-y: auto;
     }
-    #modalActions {
-      position: absolute;
-      top: 10px; right: 10px;
+    #editModal.is-open {
+      display: flex;
     }
-    #modalActions button {
-      margin-left: 8px;
-      padding: 8px 16px;
+    .modal-panel {
+      position: relative;
+      width: min(960px, 100%);
+      background: var(--panel-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 18px;
+      padding: 20px 20px 24px;
+      animation: modalIn 0.25s ease-out;
     }
-    #addButtons {
-      margin-top: 50px;
-      margin-bottom: 10px;
+    .modal-panel:focus {
+      outline: none;
     }
-    #addButtons button {
-      margin-right: 8px;
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .remove-btn {
-      background: #e74c3c;
-      color: #fff;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
+    .modal-header {
+      display: grid;
+      gap: 10px;
+    }
+    .modal-title {
+      margin: 0;
+      font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+      color: var(--accent);
+    }
+    .modal-subtitle {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #4a4a4a;
+    }
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .modal-actions button {
+      width: 100%;
+      min-height: 44px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
       cursor: pointer;
     }
-    table {
+    .modal-actions .primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(0, 115, 230, 0.25);
+    }
+    .modal-actions .primary:hover {
+      background: #005bb8;
+    }
+    .modal-actions .secondary {
+      background: rgba(0, 0, 0, 0.04);
+      color: var(--text-color);
+      border-color: var(--border);
+    }
+    .modal-actions .secondary:hover {
+      background: rgba(0, 0, 0, 0.07);
+    }
+    .modal-body {
+      display: grid;
+      gap: 18px;
+    }
+    .modal-section {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: var(--radius-sm);
+      background: rgba(248, 250, 255, 0.85);
+    }
+    .modal-section h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-description {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    #addButtons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #addButtons button {
+      flex: 1 1 160px;
+      min-height: 44px;
+      border-radius: var(--radius-sm);
+      border: 1px dashed var(--accent);
+      background: rgba(0, 115, 230, 0.1);
+      color: var(--accent);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #addButtons button:hover {
+      background: rgba(0, 115, 230, 0.16);
+    }
+    .modal-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      background: #fff;
+    }
+    .edit-table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      min-width: 520px;
     }
-    th, td {
-      border: 1px solid var(--border);
-      padding: 8px;
+    .edit-table thead {
+      background: rgba(0, 115, 230, 0.08);
+    }
+    .edit-table th,
+    .edit-table td {
+      padding: 10px 12px;
       text-align: left;
+      font-size: 0.95rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     }
-    tr:nth-child(even) {
-      background-color: var(--shade);
+    .edit-table tbody tr:nth-child(odd) {
+      background: rgba(0, 0, 0, 0.02);
+    }
+    .edit-table tbody tr:nth-child(even) {
+      background: transparent;
+    }
+    .edit-table input,
+    .edit-table select {
+      width: 100%;
+      min-height: 40px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.95rem;
+      background: #fff;
+    }
+    .edit-table input:focus,
+    .edit-table select:focus {
+      outline: 2px solid rgba(0, 115, 230, 0.35);
+      outline-offset: 1px;
+    }
+    .remove-btn {
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(194, 15, 35, 0.35);
+      background: rgba(194, 15, 35, 0.08);
+      color: #a3202a;
+      cursor: pointer;
+    }
+    .remove-btn:hover {
+      background: rgba(194, 15, 35, 0.12);
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: #5a5a5a;
+    }
+    .modal-actions button:active,
+    #addButtons button:active,
+    .remove-btn:active {
+      transform: translateY(1px);
     }
 
     /* ------------------- BOTTOM CONTROLS -------------------- */
@@ -523,6 +668,25 @@
         flex-direction: row;
         align-items: center;
         gap: 6px;
+      }
+      #editModal {
+        padding: 48px 24px;
+      }
+      .modal-panel {
+        padding: 28px 32px 36px;
+      }
+      .modal-header {
+        grid-template-columns: minmax(0, 1fr) 240px;
+        align-items: start;
+        gap: 16px;
+      }
+      .modal-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+      .modal-actions button {
+        width: auto;
+        flex: 1 1 0;
       }
     }
 
@@ -593,6 +757,15 @@
         height: 24px;
         font-size: 0.8rem;
       }
+      .modal-panel {
+        width: min(1080px, 100%);
+      }
+      .modal-body {
+        gap: 24px;
+      }
+      .modal-section {
+        padding: 20px 24px;
+      }
     }
 
     @media (min-width: 1280px) {
@@ -647,23 +820,56 @@
   </div>
 
   <!-- Edit Data modal -->
-  <div id="editModal">
-    <div id="modalActions">
-      <button onclick="saveEdits()">💾 Save All Changes</button>
-      <button onclick="closeModal()">❌ Cancel</button>
+  <div id="editModal" role="dialog" aria-modal="true" aria-labelledby="editModalTitle" aria-hidden="true">
+    <div class="modal-panel" tabindex="-1">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="editModalTitle">Edit Data</h2>
+          <p class="modal-subtitle">Review department budgets and employee details in a full-screen workspace.</p>
+        </div>
+        <div class="modal-actions" role="group" aria-label="Edit data actions">
+          <button class="primary" onclick="saveEdits()">💾 Save All Changes</button>
+          <button class="secondary" onclick="closeModal()">❌ Cancel</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div id="addButtons" aria-label="Quick add actions">
+          <button onclick="addDepartmentRow()">➕ Add Department</button>
+          <button onclick="addEmployeeRow()">➕ Add Employee</button>
+        </div>
+        <section class="modal-section" aria-labelledby="departmentSectionTitle">
+          <div>
+            <h3 id="departmentSectionTitle">Departments</h3>
+            <p class="section-description">Adjust annual wages and raise targets for each department. Totals inform the allocation dashboard instantly after saving.</p>
+          </div>
+          <div class="modal-table-wrap">
+            <table id="deptTable" class="edit-table">
+              <thead>
+                <tr><th scope="col">Name</th><th scope="col">Total Wages</th><th scope="col">Raise %</th><th scope="col">Action</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+        <section class="modal-section" aria-labelledby="employeeSectionTitle">
+          <div>
+            <h3 id="employeeSectionTitle">Employees</h3>
+            <p class="section-description">Update who appears in each department, adjust pay rates, and verify expected annual hours.</p>
+          </div>
+          <div class="modal-table-wrap">
+            <table id="empTable" class="edit-table">
+              <thead>
+                <tr><th scope="col">Name</th><th scope="col">Department</th><th scope="col">Hourly Rate</th><th scope="col">Hours</th><th scope="col">Action</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <div class="modal-footer">
+        Changes save back to Google Sheets when you select “Save All Changes.”
+      </div>
     </div>
-    <div id="addButtons">
-      <button onclick="addDepartmentRow()">➕ Add Department</button>
-      <button onclick="addEmployeeRow()">➕ Add Employee</button>
-    </div>
-    <h3>Departments</h3>
-    <table id="deptTable">
-      <tr><th>Name</th><th>Total Wages</th><th>Raise %</th><th>Action</th></tr>
-    </table>
-    <h3>Employees</h3>
-    <table id="empTable">
-      <tr><th>Name</th><th>Department</th><th>Hourly Rate</th><th>Hours</th><th>Action</th></tr>
-    </table>
   </div>
 
   <script>
@@ -1523,17 +1729,25 @@
           currentEmps = e;
           populateEditTables();
           finishLoadingBar(() => {
-            document.getElementById('editModal').style.display = 'block';
+            const modal = document.getElementById('editModal');
+            const panel = modal.querySelector('.modal-panel');
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('modal-open');
+            if (panel) {
+              panel.focus();
+            }
           });
         })
         .getDashboardData();
     }
 
     function populateEditTables() {
-      const dt = document.getElementById('deptTable');
-      dt.innerHTML = '<tr><th>Name</th><th>Total Wages</th><th>Raise %</th><th>Action</th></tr>';
+      const dtBody = document.querySelector('#deptTable tbody');
+      if (!dtBody) return;
+      dtBody.innerHTML = '';
       currentDepts.forEach(d => {
-        const r = dt.insertRow();
+        const r = dtBody.insertRow();
         r.innerHTML = `
           <td><input></td>
           <td><input type="number"></td>
@@ -1545,11 +1759,12 @@
         r.cells[2].querySelector('input').value = d.pct;
       });
 
-      const et = document.getElementById('empTable');
-      et.innerHTML = '<tr><th>Name</th><th>Department</th><th>Hourly Rate</th><th>Hours</th><th>Action</th></tr>';
+      const etBody = document.querySelector('#empTable tbody');
+      if (!etBody) return;
+      etBody.innerHTML = '';
       const opts = currentDepts.map(d => `<option>${d.name}</option>`).join('');
       currentEmps.forEach(e => {
-        const r = et.insertRow();
+        const r = etBody.insertRow();
         r.innerHTML = `
           <td><input></td>
           <td><select>${opts}</select></td>
@@ -1565,8 +1780,9 @@
     }
 
     function addDepartmentRow() {
-      const dt = document.getElementById('deptTable');
-      const r = dt.insertRow();
+      const dtBody = document.querySelector('#deptTable tbody');
+      if (!dtBody) return;
+      const r = dtBody.insertRow();
       r.innerHTML = `
         <td><input></td>
         <td><input type="number" value="0"></td>
@@ -1576,9 +1792,10 @@
     }
 
     function addEmployeeRow() {
-      const et = document.getElementById('empTable');
+      const etBody = document.querySelector('#empTable tbody');
+      if (!etBody) return;
       const opts = currentDepts.map(d => `<option>${d.name}</option>`).join('');
-      const r = et.insertRow();
+      const r = etBody.insertRow();
       r.innerHTML = `
         <td><input></td>
         <td><select>${opts}</select></td>
@@ -1595,15 +1812,13 @@
         return;
       }
       const depts = [], emps = [];
-      document.querySelectorAll('#deptTable tr').forEach((row, i) => {
-        if (i === 0) return;
+      document.querySelectorAll('#deptTable tbody tr').forEach(row => {
         const [n, w, p] = row.querySelectorAll('input');
         const name = n.value.trim();
         if (!name) return;
         depts.push({ name, wages: +w.value || 0, pct: +p.value || 0 });
       });
-      document.querySelectorAll('#empTable tr').forEach((row, i) => {
-        if (i === 0) return;
+      document.querySelectorAll('#empTable tbody tr').forEach(row => {
         const [n, d, r, h] = row.querySelectorAll('input, select');
         const name = n.value.trim();
         if (!name) return;
@@ -1619,7 +1834,14 @@
     }
 
     function closeModal() {
-      document.getElementById('editModal').style.display = 'none';
+      const modal = document.getElementById('editModal');
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      const trigger = document.getElementById('editBtn');
+      if (trigger) {
+        trigger.focus();
+      }
     }
 
     window.onload = initApp;
