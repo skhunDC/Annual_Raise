@@ -1053,40 +1053,112 @@
               google.script.run.saveEmployeeHourlyIncrease(emp.name, emp.hourlyIncrease);
             };
 
-            percentInput.oninput = () => {
-              let pctVal = parseFloat(percentInput.value) || 0;
-              if (pctVal < 0) pctVal = 0;
-              if (pctVal > 40) pctVal = 40;
-              percentInput.value = pctVal.toFixed(2);
-              es.value = pctVal;
+            const clampPercent = val => {
+              const num = Number.isFinite(val) ? val : 0;
+              return Math.min(Math.max(num, 0), 40);
+            };
 
-              const hrInc = parseFloat((emp.rate * (pctVal / 100)).toFixed(2));
-              hourlyInput.value = hrInc.toFixed(2);
+            const computeHourlyFromPercent = pct =>
+              parseFloat((emp.rate * (pct / 100)).toFixed(2));
 
-              emp.allocation = pctVal;
+            const isIncompleteNumber = value =>
+              value === '' || value === '.' || value === '-' || value === '-.';
+
+            const applyPercentChange = (
+              pctVal,
+              { formatPercentField = false, syncHourlyField = true } = {}
+            ) => {
+              const clampedPct = clampPercent(pctVal);
+              const hrInc = computeHourlyFromPercent(clampedPct);
+              es.value = clampedPct;
+              if (syncHourlyField) {
+                hourlyInput.value = hrInc.toFixed(2);
+              }
+              if (formatPercentField) {
+                percentInput.value = clampedPct.toFixed(2);
+              }
+
+              emp.allocation = clampedPct;
               emp.hourlyIncrease = hrInc;
               updateNewRate();
               updateRemaining();
-              saveAllocDebounced(pctVal);
+              saveAllocDebounced(clampedPct);
               saveIncDebounced(hrInc);
+
+              return { clampedPct, hrInc };
+            };
+
+            percentInput.oninput = () => {
+              const raw = percentInput.value.trim();
+              if (isIncompleteNumber(raw)) {
+                return;
+              }
+
+              let pctVal = parseFloat(raw);
+              if (Number.isNaN(pctVal)) {
+                return;
+              }
+
+              const { clampedPct } = applyPercentChange(pctVal, {
+                formatPercentField: false,
+                syncHourlyField: true,
+              });
+
+              if (clampedPct !== pctVal) {
+                percentInput.value = clampedPct.toString();
+              }
+            };
+
+            percentInput.onblur = () => {
+              let pctVal = parseFloat(percentInput.value);
+              if (Number.isNaN(pctVal)) {
+                pctVal = 0;
+              }
+              applyPercentChange(pctVal, {
+                formatPercentField: true,
+                syncHourlyField: true,
+              });
             };
 
             hourlyInput.oninput = () => {
-              let hrVal = parseFloat(hourlyInput.value) || 0;
-              if (hrVal < 0) hrVal = 0;
-              hrVal = parseFloat(hrVal.toFixed(2));
-              hourlyInput.value = hrVal.toFixed(2);
-              const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
-              const clampedPct = Math.min(40, pctVal);
-              es.value = clampedPct;
-              percentInput.value = clampedPct.toFixed(2);
+              const raw = hourlyInput.value.trim();
+              if (isIncompleteNumber(raw)) {
+                return;
+              }
 
-              emp.allocation = clampedPct;
-              emp.hourlyIncrease = hrVal;
-              updateNewRate();
-              updateRemaining();
-              saveAllocDebounced(clampedPct);
-              saveIncDebounced(hrVal);
+              let hrVal = parseFloat(raw);
+              if (Number.isNaN(hrVal)) {
+                return;
+              }
+
+              if (hrVal < 0) {
+                hrVal = 0;
+                hourlyInput.value = '0';
+              }
+
+              const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
+              const { clampedPct, hrInc } = applyPercentChange(pctVal, {
+                formatPercentField: true,
+                syncHourlyField: false,
+              });
+
+              if (pctVal > clampedPct) {
+                hourlyInput.value = hrInc.toFixed(2);
+              }
+            };
+
+            hourlyInput.onblur = () => {
+              let hrVal = parseFloat(hourlyInput.value);
+              if (Number.isNaN(hrVal) || hrVal < 0) {
+                hrVal = 0;
+              }
+
+              const pctVal = emp.rate > 0 ? (hrVal / emp.rate) * 100 : 0;
+              const { hrInc } = applyPercentChange(pctVal, {
+                formatPercentField: true,
+                syncHourlyField: true,
+              });
+              hourlyInput.value = hrInc.toFixed(2);
             };
           }
 
