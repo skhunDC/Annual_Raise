@@ -55,6 +55,8 @@ Responsive Design Refresh
   while preserving the original horizontal layout on large displays.
 - Expanded large-screen department columns so three-card layouts have generous
   width for the rank, slider, and pay data without horizontal scrolling.
+- Removed the raise/percent/hourly column headers and tightened the minimum
+  department card width for a more compact grid on all breakpoints.
 
 See `AGENTS.md` for repository contribution guidelines.
 
