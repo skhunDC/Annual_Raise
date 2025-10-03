@@ -746,19 +746,51 @@
     }
 
     function setupDepartmentDrag(listBox, deptName) {
+      const moveRowNearTarget = (event, targetRow) => {
+        if (!dragState.row || dragState.deptName !== deptName) {
+          return;
+        }
+        if (!targetRow || targetRow === dragState.row || !listBox.contains(targetRow)) {
+          return;
+        }
+        const rect = targetRow.getBoundingClientRect();
+        const placeAfter = event.clientY > rect.top + rect.height / 2;
+        const referenceNode = placeAfter ? targetRow.nextElementSibling : targetRow;
+        if (referenceNode !== dragState.row) {
+          listBox.insertBefore(dragState.row, referenceNode);
+        }
+      };
+
       listBox.addEventListener('dragover', event => {
         if (!dragState.row || dragState.deptName !== deptName) {
           return;
         }
         event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-        const afterElement = getDragAfterElement(listBox, event.clientY);
-        if (!afterElement) {
-          listBox.appendChild(dragState.row);
-        } else if (afterElement !== dragState.row) {
-          listBox.insertBefore(dragState.row, afterElement);
+        if (event.dataTransfer) {
+          event.dataTransfer.dropEffect = 'move';
+        }
+        const hoverRow = event.target.closest('.employee-row');
+        if (hoverRow) {
+          moveRowNearTarget(event, hoverRow);
+        } else {
+          const afterElement = getDragAfterElement(listBox, event.clientY);
+          if (!afterElement) {
+            listBox.appendChild(dragState.row);
+          } else if (afterElement !== dragState.row) {
+            listBox.insertBefore(dragState.row, afterElement);
+          }
         }
         listBox.classList.add('is-dragging-over');
+      });
+      listBox.addEventListener('dragenter', event => {
+        if (!dragState.row || dragState.deptName !== deptName) {
+          return;
+        }
+        const hoverRow = event.target.closest('.employee-row');
+        if (hoverRow) {
+          moveRowNearTarget(event, hoverRow);
+          listBox.classList.add('is-dragging-over');
+        }
       });
       listBox.addEventListener('drop', event => {
         if (!dragState.row || dragState.deptName !== deptName) {
@@ -1050,8 +1082,20 @@
                 row.focus();
               }
             });
+            let dragTemporarilyDisabled = false;
+
+            const disableDragTemporarily = () => {
+              dragTemporarilyDisabled = true;
+              row.draggable = false;
+            };
+
+            const restoreDrag = () => {
+              dragTemporarilyDisabled = false;
+              row.draggable = true;
+            };
+
             row.addEventListener('dragstart', event => {
-              if (isDragBlockedElement(event.target)) {
+              if (dragTemporarilyDisabled || isDragBlockedElement(event.target)) {
                 event.preventDefault();
                 return;
               }
@@ -1073,7 +1117,35 @@
               row.classList.remove('is-focused');
               row.setAttribute('aria-grabbed', 'false');
               listBox.classList.remove('is-dragging-over');
+              restoreDrag();
             });
+            es.addEventListener('pointerdown', ev => {
+              disableDragTemporarily();
+              ev.stopPropagation();
+              if (typeof ev.pointerId === 'number' && es.setPointerCapture) {
+                try {
+                  es.setPointerCapture(ev.pointerId);
+                } catch (err) {}
+              }
+              const handlePointerEnd = endEv => {
+                if (endEv.pointerId !== ev.pointerId) {
+                  return;
+                }
+                if (typeof ev.pointerId === 'number' && es.releasePointerCapture) {
+                  try {
+                    es.releasePointerCapture(ev.pointerId);
+                  } catch (err) {}
+                }
+                restoreDrag();
+                es.removeEventListener('pointerup', handlePointerEnd);
+                es.removeEventListener('pointercancel', handlePointerEnd);
+              };
+              es.addEventListener('pointerup', handlePointerEnd);
+              es.addEventListener('pointercancel', handlePointerEnd);
+            });
+            es.addEventListener('dragstart', ev => ev.preventDefault());
+            es.addEventListener('mousedown', ev => ev.stopPropagation());
+            es.addEventListener('touchstart', ev => ev.stopPropagation(), { passive: true });
           }
 
           const info = document.createElement('div');
