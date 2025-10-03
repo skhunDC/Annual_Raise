@@ -571,32 +571,7 @@
         grid-column: 1 / -1;
       }
       #departments {
-        grid-template-columns: repeat(auto-fit, minmax(370px, 1fr));
-      }
-      .employee-row {
-        grid-template-columns:
-          72px
-          minmax(96px, 1.45fr)
-          minmax(90px, 1.1fr)
-          minmax(52px, 0.9fr)
-          minmax(52px, 0.9fr);
-        grid-template-areas:
-          'rank info slider percent-label hourly-label'
-          'rank info slider percent-input hourly-input'
-          'rank info rate percent-input hourly-input';
-        align-items: center;
-        column-gap: 8px;
-      }
-      .employee-header {
-        display: grid;
-        grid-template-columns:
-          72px
-          minmax(96px, 1.45fr)
-          minmax(90px, 1.1fr)
-          minmax(52px, 0.9fr)
-          minmax(52px, 0.9fr);
-        align-items: center;
-        column-gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       }
       .rank-controls {
         grid-area: rank;
