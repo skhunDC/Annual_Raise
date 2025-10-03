@@ -100,3 +100,7 @@ Bug Fixes
 - Cleared the % and $/hr inputs by default so new rows start blank instead of showing 0.00.
 - Fixed drag and drop so the entire employee card is draggable and focusable,
   eliminating cases where dragging silently failed on some browsers.
+- Made drag-and-drop reordering react instantly when hovering over another card
+  so rows shift as soon as they overlap without waiting for a delay.
+- Prevented the employee raise slider from triggering unintended card drags by
+  temporarily disabling row dragging while the control is in use.
